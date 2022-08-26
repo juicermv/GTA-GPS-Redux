@@ -35,8 +35,8 @@ jobs:
         PLUGIN_SDK_DIR: C:\plugin-sdk-for-actions
         
     - name: Build plugin-sdk
-      working-directory: ${{PLUGIN_SDK_DIR}}
-      run: msbuild /p:Configuration=Release plugin_sa/plugin_sa.vcxproj
+      working-directory: ${{env.PLUGIN_SDK_DIR}}
+      run: msbuild /p:Configuration=Release ${{env.PLUGIN_SDK_DIR}}/plugin.sln
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
