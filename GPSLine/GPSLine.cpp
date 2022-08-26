@@ -127,8 +127,6 @@ void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAd
 
 
 GPSLine::GPSLine() {
-    this->logfile.open("gps_log.txt", std::ios::out);
-
     for (int i = 0; i < 1024; i++) {
         pathNodesToStream[i] = 1;
     }
@@ -160,6 +158,7 @@ GPSLine::GPSLine() {
             && DistanceBetweenPoints(CVector2D(FindPlayerCoors(0)),
                 CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) < MAX_TARGET_DISTANCE)
         {
+            this->once = false;
             CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
             FrontEndMenuManager.m_nTargetBlipIndex = 0;
         }
@@ -180,6 +179,10 @@ GPSLine::GPSLine() {
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
         {
             CVector destPosn = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
+            if (!this->once) {
+                this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z) + "\n");
+                this->once = true;
+            }
             this->targetRouteShown = false;
             this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, targetDistance);
             this->renderPath(-1, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
@@ -193,12 +196,12 @@ GPSLine::GPSLine() {
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Don't see why we can't have GPS on bicycles since V has it. I'll make this toggleable in the future.
             && CTheScripts::IsPlayerOnAMission())
         {
-            //this->logfile << "Looking for mission objective blip.\n";
+            this->Log("Looking for mission objective blip.\n");
             for (int i = 0; i < 174; i++) {
                 tRadarTrace trace = CRadar::ms_RadarTrace[i];
-                //this->logfile << (int)trace.m_nBlipType << ", " << (int)trace.m_nRadarSprite << "\n";
+                this->Log((int)trace.m_nBlipType + ", " + (int)trace.m_nRadarSprite);
                 if (trace.m_nRadarSprite == 0 && trace.m_nBlipDisplay) {
-                    this->logfile << "Found mission objective blip.\n";
+                    this->Log("Found mission objective blip.\n");
                     CVector destVec;
                     switch (trace.m_nBlipType) {
                     case 1:
@@ -210,10 +213,10 @@ GPSLine::GPSLine() {
                     case 3:
                         destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
                         break;
-                    case 6: //
-                    case 8: // I can't get pickups to function at the moment and these other ones are airstrips and search lights
+                    case 6: // I can't get pickups to function
+                    case 7: // at the moment and these other
+                    case 8: // ones are airstrips and search lights
                     case 0: // which don't need markers.
-                    case 7: //
                         return;
                     default:
                         destVec = trace.m_vecPos;
@@ -232,6 +235,19 @@ GPSLine::GPSLine() {
     };
 
     plugin::Events::shutdownRwEvent += [this]() {
+        this->logfile.open("gps_log.txt", std::ios::out);
+        this->logfile << this->logBuffer;
         this->logfile.close();
     };
+}
+
+void GPSLine::Log(std::string val) {
+    if (sizeof(this->logBuffer) < 10240) {
+        time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        this->logBuffer += std::ctime(&currentTime) + ' ' + val + '\n';
+    }
+    else {
+        this->logBuffer = "";
+        Log(val);
+    }
 }

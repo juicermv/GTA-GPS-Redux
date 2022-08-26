@@ -7,6 +7,9 @@
 #include <iostream>
 #include <fstream>
 #include <iterator>
+#include <string>
+#include <chrono>
+#include <ctime>
 
 #include "plugin.h"
 #include "RenderWare.h"
@@ -39,7 +42,11 @@
 
 class GPSLine {
 private:
-    std::ofstream logfile;
+    std::ofstream GPSLine::logfile;
+    std::string GPSLine::logBuffer;
+    void GPSLine::Log(std::string val);
+
+    bool once;
 
     // These variables will be used for the gps route following the target blip set by the player
     bool GPSLine::targetRouteShown;
