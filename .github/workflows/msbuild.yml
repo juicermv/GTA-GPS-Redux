@@ -27,6 +27,9 @@ jobs:
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
+      with:
+        vs-version: '15.9.50'
+        sdk-version: 141_xp
       
     - name: Clone plugin-sdk repo
       run: git clone https://github.com/yoni1857/plugin-sdk-for-actions
@@ -36,7 +39,7 @@ jobs:
         
     - name: Build plugin-sdk
       working-directory: ${{env.PLUGIN_SDK_DIR}}
-      run: msbuild .
+      run: msbuild /m .
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
