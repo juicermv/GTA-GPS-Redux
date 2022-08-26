@@ -29,10 +29,9 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
       
     - name: Clone plugin-sdk repo
-      working-directory: ~/
       run: git clone https://github.com/yoni1857/plugin-sdk-for-actions
       env:
-        PLUGIN_SDK_DIR: ~/plugin-sdk-for-actions
+        PLUGIN_SDK_DIR: plugin-sdk-for-actions
         
     - name: Build plugin-sdk
       working-directory: ${{env.PLUGIN_SDK_DIR}}
