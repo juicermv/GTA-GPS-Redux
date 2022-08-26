@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="GPSLine.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GPSLine.h" />
+  </ItemGroup>
 </Project>

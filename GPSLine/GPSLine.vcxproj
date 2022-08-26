@@ -15,21 +15,21 @@
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>GPSLine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA zDebug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -42,17 +42,17 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA Release|Win32'">
-    <OutDir>G:\GTA SA The Modded Edition\modloader\GPS\</OutDir>
+    <OutDir>${GTA_SA_DIR}\modloader\GPS REDUX</OutDir>
     <IntDir>$(ProjectDir).obj\GTASA\Release\</IntDir>
-    <TargetName>GPS.SA</TargetName>
+    <TargetName>SA.GPS.REDUX</TargetName>
     <TargetExt>.asi</TargetExt>
     <IncludePath>$(IncludePath);$(DIRECTX9_SDK_DIR)\Include\</IncludePath>
     <LibraryPath>$(LibraryPath);$(DIRECTX9_SDK_DIR)\Lib\x86\</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA zDebug|Win32'">
-    <OutDir>G:\GTA SA The Modded Edition\modloader\GPS\</OutDir>
+    <OutDir>${GTA_SA_DIR}\modloader\GPS REDUX</OutDir>
     <IntDir>$(ProjectDir).obj\GTASA\Debug\</IntDir>
-    <TargetName>GPS.SA</TargetName>
+    <TargetName>SA.GPS.REDUX</TargetName>
     <TargetExt>.asi</TargetExt>
     <IncludePath>$(IncludePath);$(DIRECTX9_SDK_DIR)\Include\</IncludePath>
     <LibraryPath>$(LibraryPath);$(DIRECTX9_SDK_DIR)\Lib\x86\</LibraryPath>
@@ -99,6 +99,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GPSLine.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GPSLine.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
