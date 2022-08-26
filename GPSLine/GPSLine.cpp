@@ -36,23 +36,23 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color)
     // Placeholder colors for now.
     switch (color) {
     case 0: // RED
-        r = 255; g = 38; b = 41; break;
+        r = plugin::color::Red.r; g = plugin::color::Red.g; b = plugin::color::Red.b; break;
     case 1: // GREEN
-        r = 82; g = 157; b = 67; break;
+        r = plugin::color::Green.r; g = plugin::color::Green.g; b = plugin::color::Green.b; break;
     case 2: // BLUE
-        r = 20; g = 25; b = 200; break;
+        r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b; break;
     case 3: // WHITE
-        r = 255; g = 255; b = 255; break;
+        r = plugin::color::White.r; g = plugin::color::White.g; b = plugin::color::White.b; break;
     case 4: // YELLOW
-        r = 255; g = 255; b = 0; break;
+        r = plugin::color::Yellow.r; g = plugin::color::Yellow.g; b = plugin::color::Yellow.b; break;
     case 5: // PURPLE
-        r = 168; g = 110; b = 252; break;
+        r = plugin::color::Purple.r; g = plugin::color::Purple.g; b = plugin::color::Purple.b; break;
     case 6: // CYAN
-        r = 172; g = 203; b = 241; break;
+        r = plugin::color::Cyan.r; g = plugin::color::Cyan.g; b = plugin::color::Cyan.b; break;
     case 7: // Supposed to alternate between blue and red but I can't be bothered so ORANGE.
-        r = 215; g = 146; b = 24; break;
+        r = plugin::color::Orange.r; g = plugin::color::Orange.g; b = plugin::color::Orange.b; break;
     case 8: // DESTINATION
-        r = 180; g = 155; b = 80; break;
+        r = plugin::color::Yellow.r; g = plugin::color::Yellow.g; b = plugin::color::Yellow.b; break;
     default:
         r = GPS_LINE_R; g = GPS_LINE_G; b = GPS_LINE_B; break;
     }

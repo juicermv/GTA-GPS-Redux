@@ -11,6 +11,8 @@
 #include <chrono>
 #include <ctime>
 
+#include "inipp.h"
+
 #include "plugin.h"
 #include "RenderWare.h"
 #include "common.h"
@@ -25,23 +27,33 @@
 #include "CPickup.h"
 #include "CPickups.h"
 #include "CTheScripts.h"
-#include "CStreaming.h"
 #include "RenderWare.h"
+#include "Color.h"
 #include "CFont.h"
 #include "d3d9.h"
-#include "extensions/ScriptCommands.h"
-#include "StringUtils.h"
 
-#define MAX_NODE_POINTS 50000
-#define GPS_LINE_WIDTH  4.0f
-#define GPS_LINE_R  180
-#define GPS_LINE_G  24
-#define GPS_LINE_B  24
-#define GPS_LINE_A  255
-#define MAX_TARGET_DISTANCE 10.0f
+/*
+    #define MAX_NODE_POINTS 50000
+    #define GPS_LINE_WIDTH  4.0f
+    #define GPS_LINE_R  180
+    #define GPS_LINE_G  24
+    #define GPS_LINE_B  24
+    #define GPS_LINE_A  255
+    #define MAX_TARGET_DISTANCE 10.0f
+*/
 
 class GPSLine {
 private:
+
+    // Config values
+    static const inline int GPSLine::MAX_NODE_POINTS = 5000;
+    static inline float GPSLine::GPS_LINE_WIDTH = 4.0f;
+    static inline unsigned char GPSLine::GPS_LINE_R = 180;
+    static inline unsigned char GPSLine::GPS_LINE_G = 24;
+    static inline unsigned char GPSLine::GPS_LINE_B = 24;
+    static inline unsigned char GPSLine::GPS_LINE_A = 255;
+    static inline float GPSLine::MAX_TARGET_DISTANCE = 10.0f;
+
     std::ofstream GPSLine::logfile;
     std::string GPSLine::logBuffer;
     void GPSLine::Log(std::string val);
