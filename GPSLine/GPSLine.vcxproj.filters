@@ -5,5 +5,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPSLine.h" />
+    <ClInclude Include="inipp.h" />
   </ItemGroup>
 </Project>

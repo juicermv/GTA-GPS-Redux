@@ -33,7 +33,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color)
     vertex.rhw = CSprite2d::RecipNearClip;
     int r, g, b;
 
-    // Placeholder colors for now.
+    // Placeholder colors for now. When I manage to find the original RGB values for all these I'll make them configurable as well.
     switch (color) {
     case 0: // RED
         r = plugin::color::Red.r; g = plugin::color::Red.g; b = plugin::color::Red.b; break;
@@ -57,7 +57,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color)
         r = GPS_LINE_R; g = GPS_LINE_G; b = GPS_LINE_B; break;
     }
 
-    vertex.emissiveColor = RWRGBALONG(r, g, b, 255);
+    vertex.emissiveColor = RWRGBALONG(r, g, b, GPS_LINE_A);
 }
 
 void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
@@ -125,8 +125,28 @@ void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAd
     gpsShown = true;
 }
 
-
 GPSLine::GPSLine() {
+    this->logfile.open("gps_log.txt", std::ios::out);
+
+    // Load config values from file.
+    iniFile.open("gpsconf.ini", std::ios::in);
+    iniParser.parse(iniFile);
+    this->Log("INI config loaded:");
+    iniParser.generate(this->logBuffer);
+    iniParser.strip_trailing_comments();
+    iniParser.interpolate();
+    this->Log("INI config post-processing:");
+    iniParser.generate(this->logBuffer);
+
+    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line opacity", GPS_LINE_A);
+
+    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
+    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", GPS_LINE_G);
+    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line blue", GPS_LINE_B);
+    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint removal distance", MAX_TARGET_DISTANCE);
+    iniFile.close();
+
     for (int i = 0; i < 1024; i++) {
         pathNodesToStream[i] = 1;
     }
@@ -235,19 +255,21 @@ GPSLine::GPSLine() {
     };
 
     plugin::Events::shutdownRwEvent += [this]() {
-        this->logfile.open("gps_log.txt", std::ios::out);
-        this->logfile << this->logBuffer;
+        std::string temp;
+        this->logBuffer >> temp;
+        this->logfile << temp;
         this->logfile.close();
+        logBuffer.flush();
     };
 }
 
 void GPSLine::Log(std::string val) {
-    if (sizeof(this->logBuffer) < 10240) {
+    if (sizeof(this->logBuffer) < 2097152) {
         time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        this->logBuffer += std::ctime(&currentTime) + ' ' + val + '\n';
+        this->logBuffer << std::ctime(&currentTime) << ' ' << val << '\n';
     }
     else {
-        this->logBuffer = "";
+        this->logBuffer.clear();
         Log(val);
     }
 }

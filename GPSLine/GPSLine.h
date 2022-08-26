@@ -44,6 +44,9 @@
 
 class GPSLine {
 private:
+    // Ini Config stuff
+    inipp::Ini<char> iniParser;
+    std::ifstream iniFile;
 
     // Config values
     static const inline int GPSLine::MAX_NODE_POINTS = 5000;
@@ -54,10 +57,10 @@ private:
     static inline unsigned char GPSLine::GPS_LINE_A = 255;
     static inline float GPSLine::MAX_TARGET_DISTANCE = 10.0f;
 
+    //Logging stuff
     std::ofstream GPSLine::logfile;
-    std::string GPSLine::logBuffer;
+    std::stringstream GPSLine::logBuffer;
     void GPSLine::Log(std::string val);
-
     bool once;
 
     // These variables will be used for the gps route following the target blip set by the player
