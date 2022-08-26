@@ -30,8 +30,9 @@ jobs:
       
     - name: Clone plugin-sdk repo
       run: git clone https://github.com/yoni1857/plugin-sdk-for-actions
+      working-directory: C:\
       env:
-        PLUGIN_SDK_DIR: plugin-sdk-for-actions
+        PLUGIN_SDK_DIR: C:\plugin-sdk-for-actions
         
     - name: Build plugin-sdk
       working-directory: ${{env.PLUGIN_SDK_DIR}}
