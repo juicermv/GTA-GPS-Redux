@@ -35,7 +35,8 @@ jobs:
         PLUGIN_SDK_DIR: ~/plugin-sdk-for-actions
         
     - name: Build plugin-sdk
-      
+      working-directory: ${{env.PLUGIN_SDK_DIR}}
+      run: msbuild /m plugin.sln
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
