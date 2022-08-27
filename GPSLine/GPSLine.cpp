@@ -3,7 +3,7 @@
 void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance) {
     destPosn.z = CWorld::FindGroundZForCoord(destPosn.x, destPosn.y);
 
-    ThePaths.DoPathSearch(0, FindPlayerCoors(0), CNodeAddress(), destPosn, resultNodes, &nodesCount, MAX_NODE_POINTS, &gpsDistance,
+    ThePaths.DoPathSearch(int(PATH_TYPE), FindPlayerCoors(0), CNodeAddress(), destPosn, resultNodes, &nodesCount, MAX_NODE_POINTS, &gpsDistance,
         999999.0f, NULL, 999999.0f, false, CNodeAddress(), false, FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT);
 
     if (nodesCount > 0) {
@@ -148,6 +148,7 @@ GPSLine::GPSLine() {
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line opacity", GPS_LINE_A);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Pathing algorithm", PATH_TYPE);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", GPS_LINE_G);
