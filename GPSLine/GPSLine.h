@@ -57,11 +57,10 @@ private:
     static inline short GPSLine::GPS_LINE_A = -1;
     static inline float GPSLine::MAX_TARGET_DISTANCE = -1;
     static inline bool GPSLine::ENABLE_BMX = -1;
-    static inline bool GPSLine::PATH_TYPE = -1;
 
     //Logging stuff
     std::ofstream GPSLine::logfile;
-    std::stringstream GPSLine::logBuffer;
+    std::string GPSLine::logBuffer;
     void GPSLine::Log(std::string val);
     bool once;
 

@@ -3,7 +3,7 @@
 void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance) {
     destPosn.z = CWorld::FindGroundZForCoord(destPosn.x, destPosn.y);
 
-    ThePaths.DoPathSearch(int(PATH_TYPE), FindPlayerCoors(0), CNodeAddress(), destPosn, resultNodes, &nodesCount, MAX_NODE_POINTS, &gpsDistance,
+    ThePaths.DoPathSearch(0, FindPlayerCoors(0), CNodeAddress(), destPosn, resultNodes, &nodesCount, MAX_NODE_POINTS, &gpsDistance,
         999999.0f, NULL, 999999.0f, false, CNodeAddress(), false, FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT);
 
     if (nodesCount > 0) {
@@ -70,12 +70,12 @@ void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAd
     {
         RECT rect;
         CVector2D posn;
-        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(-1.0f, -1.0f));
-        rect.left = static_cast<LONG>(posn.x + 2.0f);
-        rect.bottom = static_cast<LONG>(posn.y - 2.0f);
-        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(1.0f, 1.0f));
-        rect.right = static_cast<LONG>(posn.x - 2.0f);
-        rect.top = static_cast<LONG>(posn.y + 2.0f);
+        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(GPS_LINE_WIDTH / -4, GPS_LINE_WIDTH / -4));
+        rect.left = static_cast<LONG>(posn.x + GPS_LINE_WIDTH/2);
+        rect.bottom = static_cast<LONG>(posn.y - GPS_LINE_WIDTH / 2);
+        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(GPS_LINE_WIDTH / 4, GPS_LINE_WIDTH / 4));
+        rect.right = static_cast<LONG>(posn.x - GPS_LINE_WIDTH / 2);
+        rect.top = static_cast<LONG>(posn.y + GPS_LINE_WIDTH / 2);
         GetD3DDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
         GetD3DDevice()->SetScissorRect(&rect);
     }
@@ -133,22 +133,21 @@ bool GPSLine::CheckBMX() {
 }
 
 GPSLine::GPSLine() {
+    // Logging stuff
     this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
 
     // Load config values from file.
     iniFile.open("SA.GPS.CONF.ini", std::ios::in);
     iniParser.parse(iniFile);
     this->Log("INI config loaded:");
-    iniParser.generate(this->logBuffer);
+    std::string line;
+    while (std::getline(iniFile, line)) this->Log(line);
     iniParser.strip_trailing_comments();
     iniParser.interpolate();
-    this->Log("INI config post-processing:");
-    iniParser.generate(this->logBuffer);
 
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line opacity", GPS_LINE_A);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Pathing algorithm", PATH_TYPE);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", GPS_LINE_G);
@@ -266,21 +265,19 @@ GPSLine::GPSLine() {
     };
 
     plugin::Events::shutdownRwEvent += [this]() {
-        std::string temp;
-        this->logBuffer >> temp;
-        this->logfile << temp;
+        this->logfile << this->logBuffer;
         this->logfile.close();
-        logBuffer.flush();
+        logBufferStream.flush();
     };
 }
 
 void GPSLine::Log(std::string val) {
     if (sizeof(this->logBuffer) < 2097152) {
         time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        this->logBuffer << std::ctime(&currentTime) << ' ' << val << '\n';
+        this->logBuffer += std::ctime(&currentTime) + ' ' + val + '\n';
     }
     else {
-        this->logBuffer.clear();
+        this->logBuffer = "";
         Log(val);
     }
 }
