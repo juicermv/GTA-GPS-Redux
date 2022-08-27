@@ -70,12 +70,12 @@ void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAd
     {
         RECT rect;
         CVector2D posn;
-        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(GPS_LINE_WIDTH / -4, GPS_LINE_WIDTH / -4));
-        rect.left = static_cast<LONG>(posn.x + GPS_LINE_WIDTH/2);
-        rect.bottom = static_cast<LONG>(posn.y - GPS_LINE_WIDTH / 2);
-        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(GPS_LINE_WIDTH / 4, GPS_LINE_WIDTH / 4));
-        rect.right = static_cast<LONG>(posn.x - GPS_LINE_WIDTH / 2);
-        rect.top = static_cast<LONG>(posn.y + GPS_LINE_WIDTH / 2);
+        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(-1.0f, -1.0f));
+        rect.left = static_cast<LONG>(posn.x + 2.0f);
+        rect.bottom = static_cast<LONG>(posn.y - 2.0f);
+        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(1.0f, 1.0f));
+        rect.right = static_cast<LONG>(posn.x - 2.0f);
+        rect.top = static_cast<LONG>(posn.y + 2.0f);
         GetD3DDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
         GetD3DDevice()->SetScissorRect(&rect);
     }
@@ -140,10 +140,11 @@ GPSLine::GPSLine() {
     iniFile.open("SA.GPS.CONF.ini", std::ios::in);
     iniParser.parse(iniFile);
     this->Log("INI config loaded:");
-    std::string line;
-    while (std::getline(iniFile, line)) this->Log(line);
+    iniParser.generate(this->logfile);
     iniParser.strip_trailing_comments();
     iniParser.interpolate();
+    this->Log("INI config processed:");
+    iniParser.generate(this->logfile);
 
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line opacity", GPS_LINE_A);
@@ -265,19 +266,18 @@ GPSLine::GPSLine() {
     };
 
     plugin::Events::shutdownRwEvent += [this]() {
-        this->logfile << this->logBuffer;
         this->logfile.close();
-        logBufferStream.flush();
     };
 }
 
 void GPSLine::Log(std::string val) {
-    if (sizeof(this->logBuffer) < 2097152) {
+    if (this->logLines < 512) {
         time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        this->logBuffer += std::ctime(&currentTime) + ' ' + val + '\n';
+        this->logfile << std::ctime(&currentTime) << " " << val << '\n';
     }
     else {
-        this->logBuffer = "";
+        this->logfile.flush();
+        this->logLines = 0;
         Log(val);
     }
 }

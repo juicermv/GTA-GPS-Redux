@@ -59,8 +59,8 @@ private:
     static inline bool GPSLine::ENABLE_BMX = -1;
 
     //Logging stuff
+    int GPSLine::logLines;
     std::ofstream GPSLine::logfile;
-    std::string GPSLine::logBuffer;
     void GPSLine::Log(std::string val);
     bool once;
 
