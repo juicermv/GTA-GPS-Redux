@@ -9,7 +9,7 @@ If you'd like to contribute, go ahead.
 ---
 
 ## Default config:
-`gpsconf.ini`
+`SA.GPS.CONF.ini`
 ```ini
 ; This applies to all GPS routes
 [Navigation Config]

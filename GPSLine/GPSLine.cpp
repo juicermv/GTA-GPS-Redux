@@ -126,10 +126,10 @@ void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAd
 }
 
 GPSLine::GPSLine() {
-    this->logfile.open("gps_log.txt", std::ios::out);
+    this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
 
     // Load config values from file.
-    iniFile.open("gpsconf.ini", std::ios::in);
+    iniFile.open("SA.GPS.CONF.ini", std::ios::in);
     iniParser.parse(iniFile);
     this->Log("INI config loaded:");
     iniParser.generate(this->logBuffer);
