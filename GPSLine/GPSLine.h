@@ -50,12 +50,12 @@ private:
 
     // Config values
     static const inline int GPSLine::MAX_NODE_POINTS = 5000;
-    static inline float GPSLine::GPS_LINE_WIDTH = 4.0f;
-    static inline unsigned char GPSLine::GPS_LINE_R = 180;
-    static inline unsigned char GPSLine::GPS_LINE_G = 24;
-    static inline unsigned char GPSLine::GPS_LINE_B = 24;
-    static inline unsigned char GPSLine::GPS_LINE_A = 255;
-    static inline float GPSLine::MAX_TARGET_DISTANCE = 10.0f;
+    static inline float GPSLine::GPS_LINE_WIDTH = -1;
+    static inline unsigned char GPSLine::GPS_LINE_R = -1;
+    static inline unsigned char GPSLine::GPS_LINE_G = -1;
+    static inline unsigned char GPSLine::GPS_LINE_B = -1;
+    static inline unsigned char GPSLine::GPS_LINE_A = -1;
+    static inline float GPSLine::MAX_TARGET_DISTANCE = -1;
 
     //Logging stuff
     std::ofstream GPSLine::logfile;
