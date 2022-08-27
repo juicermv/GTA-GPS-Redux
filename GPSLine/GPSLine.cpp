@@ -22,7 +22,6 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
             }
         }
     }
-
 }
 
 void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color) {
@@ -125,6 +124,14 @@ void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAd
     gpsShown = true;
 }
 
+// Check whether on BMX, will always return false if bmx support is enabled.
+bool GPSLine::CheckBMX() {
+    if (ENABLE_BMX)
+        return false;
+    
+    return FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BMX;
+}
+
 GPSLine::GPSLine() {
     this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
 
@@ -140,6 +147,7 @@ GPSLine::GPSLine() {
 
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line opacity", GPS_LINE_A);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", GPS_LINE_G);
@@ -193,7 +201,7 @@ GPSLine::GPSLine() {
             && playa->m_nPedFlags.bInVehicle
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
-            && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Don't see why we can't have GPS on bicycles since V has it. I'll make this toggleable in the future.
+            && !CheckBMX()
             && FrontEndMenuManager.m_nTargetBlipIndex
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
@@ -213,7 +221,7 @@ GPSLine::GPSLine() {
             && playa->m_nPedFlags.bInVehicle
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
-            && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Don't see why we can't have GPS on bicycles since V has it. I'll make this toggleable in the future.
+            && !CheckBMX()
             && CTheScripts::IsPlayerOnAMission())
         {
             this->Log("Looking for mission objective blip.\n");
@@ -233,10 +241,12 @@ GPSLine::GPSLine() {
                     case 3:
                         destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
                         break;
-                    case 6: // I can't get pickups to function
-                    case 7: // at the moment and these other
-                    case 8: // ones are airstrips and search lights
-                    case 0: // which don't need markers.
+                    case 6: // Searchlights
+                    case 8: // Airstripts
+                    case 0: // NONE???
+                        return;
+                    case 7: // Pickups
+                        this->Log("Pickup detected. Not providing GPS navigation.");
                         return;
                     default:
                         destVec = trace.m_vecPos;

@@ -56,6 +56,7 @@ private:
     static inline short GPSLine::GPS_LINE_B = -1;
     static inline short GPSLine::GPS_LINE_A = -1;
     static inline float GPSLine::MAX_TARGET_DISTANCE = -1;
+    static inline bool GPSLine::ENABLE_BMX = -1;
 
     //Logging stuff
     std::ofstream GPSLine::logfile;
@@ -83,6 +84,8 @@ private:
 
     char GPSLine::pathNodesToStream[1024];
     int GPSLine::pathNodes[50000];
+
+    bool GPSLine::CheckBMX();
 
     void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color);
 
