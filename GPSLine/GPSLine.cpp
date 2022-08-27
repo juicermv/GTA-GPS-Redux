@@ -272,8 +272,10 @@ GPSLine::GPSLine() {
 
 void GPSLine::Log(std::string val) {
     if (this->logLines < 512) {
-        time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        this->logfile << std::ctime(&currentTime) << " " << val << '\n';
+        time_t timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        char stime[128];
+        strftime(stime, 128, "%c", localtime(&timenow));
+        this->logfile << stime << " | " << val << '\n';
     }
     else {
         this->logfile.flush();
