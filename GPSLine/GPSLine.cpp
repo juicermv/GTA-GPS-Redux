@@ -285,7 +285,7 @@ void GPSLine::Log(std::string val) {
     }
     else {
         this->logfile.close();
-        this->logfile.open("SA.GPS.CONF.ini", std::ios::in);
+        this->logfile.open("SA.GPS.CONF.ini", std::ios::out);
         this->logLines = 0;
         Log(val);
     }
