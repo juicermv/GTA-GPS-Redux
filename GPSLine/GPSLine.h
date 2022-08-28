@@ -55,7 +55,7 @@ private:
     static inline short GPSLine::GPS_LINE_G = -1;
     static inline short GPSLine::GPS_LINE_B = -1;
     static inline short GPSLine::GPS_LINE_A = -1;
-    static inline float GPSLine::MAX_TARGET_DISTANCE = -1;
+    static inline float GPSLine::DISABLE_PROXIMITY = -1;
     static inline bool GPSLine::ENABLE_BMX = -1;
 
     //Logging stuff
@@ -87,12 +87,12 @@ private:
 
     bool GPSLine::CheckBMX();
 
-    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color);
+    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, bool friendly);
 
     // Self explanatory.
     void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
 
-    void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
+    void GPSLine::renderPath(short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
 
 public:
 

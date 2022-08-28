@@ -24,7 +24,7 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
     }
 }
 
-void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color) {
+void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, bool friendly) {
     vertex.x = x;
     vertex.y = y;
     vertex.u = vertex.v = 0.0f;
@@ -39,19 +39,25 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color)
     case 1: // GREEN
         r = plugin::color::Chartreuse.r; g = plugin::color::Chartreuse.g; b = plugin::color::Chartreuse.b; break;
     case 2: // BLUE
-        r = plugin::color::RoyalBlue.r; g = plugin::color::RoyalBlue.g; b = plugin::color::RoyalBlue.b; break;
+        r = plugin::color::DarkBlue.r; g = plugin::color::DarkBlue.g; b = plugin::color::DarkBlue.b; break;
     case 3: // WHITE
         r = plugin::color::White.r; g = plugin::color::White.g; b = plugin::color::White.b; break;
     case 4: // YELLOW
-        r = plugin::color::Goldenrod.r; g = plugin::color::Goldenrod.g; b = plugin::color::Goldenrod.b; break;
+        r = plugin::color::Gold.r; g = plugin::color::Gold.g; b = plugin::color::Gold.b; break;
     case 5: // PURPLE
         r = plugin::color::Purple.r; g = plugin::color::Purple.g; b = plugin::color::Purple.b; break;
     case 6: // CYAN
         r = plugin::color::Cyan.r; g = plugin::color::Cyan.g; b = plugin::color::Cyan.b; break;
-    case 7: // Supposed to alternate between blue and red but I can't be bothered so ORANGE.
-        r = plugin::color::Orange.r; g = plugin::color::Orange.g; b = plugin::color::Orange.b; break;
+    case 7: // Depends on whether blip is friendly
+        if (friendly) {
+            r = plugin::color::DarkBlue.r; g = plugin::color::DarkBlue.g; b = plugin::color::DarkBlue.b;
+        }
+        else {
+            r = plugin::color::Red.r; g = plugin::color::Red.g; b = plugin::color::Red.b;
+        }
+        break;
     case 8: // DESTINATION
-        r = plugin::color::Goldenrod.r; g = plugin::color::Goldenrod.g; b = plugin::color::Goldenrod.b; break;
+        r = plugin::color::Gold.r; g = plugin::color::Gold.g; b = plugin::color::Gold.b; break;
     default:
         r = GPS_LINE_R; g = GPS_LINE_G; b = GPS_LINE_B; break;
     }
@@ -59,7 +65,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color)
     vertex.emissiveColor = RWRGBALONG(r, g, b, GPS_LINE_A);
 }
 
-void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
+void GPSLine::renderPath(short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
     if (nodesCount <= 0) {
         return;
     }
@@ -105,10 +111,10 @@ void GPSLine::renderPath(short color, short& nodesCount, bool& gpsShown, CNodeAd
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
             shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
         }
-        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color);
-        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color);
-        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color);
-        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color);
+        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color, friendly);
         vertIndex += 4;
     }
 
@@ -149,11 +155,11 @@ GPSLine::GPSLine() {
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line opacity", GPS_LINE_A);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", DISABLE_PROXIMITY);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", GPS_LINE_G);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line blue", GPS_LINE_B);
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint removal distance", MAX_TARGET_DISTANCE);
     iniFile.close();
 
     for (int i = 0; i < 1024; i++) {
@@ -185,7 +191,7 @@ GPSLine::GPSLine() {
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
             && FindPlayerPed(0)
             && DistanceBetweenPoints(CVector2D(FindPlayerCoors(0)),
-                CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) < MAX_TARGET_DISTANCE)
+                CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) < DISABLE_PROXIMITY)
         {
             this->once = false;
             CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
@@ -214,7 +220,7 @@ GPSLine::GPSLine() {
             }
             this->targetRouteShown = false;
             this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, targetDistance);
-            this->renderPath(-1, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
+            this->renderPath(-1, true, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
         }
 
         if (playa
@@ -229,7 +235,7 @@ GPSLine::GPSLine() {
             for (int i = 0; i < 174; i++) {
                 tRadarTrace trace = CRadar::ms_RadarTrace[i];
                 this->Log((int)trace.m_nBlipType + ", " + (int)trace.m_nRadarSprite);
-                if (trace.m_nRadarSprite == 0 && trace.m_nBlipDisplay) {
+                if (trace.m_nRadarSprite == 0 && trace.m_nBlipDisplay > 1 && DistanceBetweenPoints(playa->GetPosition(), trace.m_vecPos) > DISABLE_PROXIMITY) {
                     this->Log("Found mission objective blip.");
                     CVector destVec;
                     switch (trace.m_nBlipType) {
@@ -256,7 +262,7 @@ GPSLine::GPSLine() {
                     
                     this->missionRouteShown = false;
                     this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, missionDistance);
-                    this->renderPath(trace.m_nColour, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
+                    this->renderPath(trace.m_nColour, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
                 }
             }
 
@@ -278,8 +284,8 @@ void GPSLine::Log(std::string val) {
         this->logfile << stime << " | " << val.c_str() << '\n';
     }
     else {
-        this->logfile.clear();
-        this->logfile.flush();
+        this->logfile.close();
+        this->logfile.open("SA.GPS.CONF.ini", std::ios::in);
         this->logLines = 0;
         Log(val);
     }
