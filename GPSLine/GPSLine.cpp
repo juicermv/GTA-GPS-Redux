@@ -37,13 +37,13 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color)
     case 0: // RED
         r = plugin::color::Red.r; g = plugin::color::Red.g; b = plugin::color::Red.b; break;
     case 1: // GREEN
-        r = plugin::color::Green.r; g = plugin::color::Green.g; b = plugin::color::Green.b; break;
+        r = plugin::color::Chartreuse.r; g = plugin::color::Chartreuse.g; b = plugin::color::Chartreuse.b; break;
     case 2: // BLUE
-        r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b; break;
+        r = plugin::color::RoyalBlue.r; g = plugin::color::RoyalBlue.g; b = plugin::color::RoyalBlue.b; break;
     case 3: // WHITE
         r = plugin::color::White.r; g = plugin::color::White.g; b = plugin::color::White.b; break;
     case 4: // YELLOW
-        r = plugin::color::Yellow.r; g = plugin::color::Yellow.g; b = plugin::color::Yellow.b; break;
+        r = plugin::color::Goldenrod.r; g = plugin::color::Goldenrod.g; b = plugin::color::Goldenrod.b; break;
     case 5: // PURPLE
         r = plugin::color::Purple.r; g = plugin::color::Purple.g; b = plugin::color::Purple.b; break;
     case 6: // CYAN
@@ -51,7 +51,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color)
     case 7: // Supposed to alternate between blue and red but I can't be bothered so ORANGE.
         r = plugin::color::Orange.r; g = plugin::color::Orange.g; b = plugin::color::Orange.b; break;
     case 8: // DESTINATION
-        r = plugin::color::Yellow.r; g = plugin::color::Yellow.g; b = plugin::color::Yellow.b; break;
+        r = plugin::color::Goldenrod.r; g = plugin::color::Goldenrod.g; b = plugin::color::Goldenrod.b; break;
     default:
         r = GPS_LINE_R; g = GPS_LINE_G; b = GPS_LINE_B; break;
     }
@@ -209,7 +209,7 @@ GPSLine::GPSLine() {
         {
             CVector destPosn = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
             if (!this->once) {
-                this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z) + "\n");
+                this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z));
                 this->once = true;
             }
             this->targetRouteShown = false;
@@ -225,12 +225,12 @@ GPSLine::GPSLine() {
             && !CheckBMX()
             && CTheScripts::IsPlayerOnAMission())
         {
-            this->Log("Looking for mission objective blip.\n");
+            this->Log("Looking for mission objective blip.");
             for (int i = 0; i < 174; i++) {
                 tRadarTrace trace = CRadar::ms_RadarTrace[i];
                 this->Log((int)trace.m_nBlipType + ", " + (int)trace.m_nRadarSprite);
                 if (trace.m_nRadarSprite == 0 && trace.m_nBlipDisplay) {
-                    this->Log("Found mission objective blip.\n");
+                    this->Log("Found mission objective blip.");
                     CVector destVec;
                     switch (trace.m_nBlipType) {
                     case 1:
@@ -271,13 +271,14 @@ GPSLine::GPSLine() {
 }
 
 void GPSLine::Log(std::string val) {
-    if (this->logLines < 512) {
+    if (this->logLines < 96) {
         time_t timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         char stime[128];
         strftime(stime, 128, "%c", localtime(&timenow));
-        this->logfile << stime << " | " << val << '\n';
+        this->logfile << stime << " | " << val.c_str() << '\n';
     }
     else {
+        this->logfile.clear();
         this->logfile.flush();
         this->logLines = 0;
         Log(val);
