@@ -61,7 +61,7 @@ private:
     //Logging stuff
     int GPSLine::logLines;
     std::ofstream GPSLine::logfile;
-    void GPSLine::Log(std::string val);
+    void GPSLine::Log(const char* val);
     bool once;
 
     // These variables will be used for the gps route following the target blip set by the player

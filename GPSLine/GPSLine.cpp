@@ -191,7 +191,7 @@ GPSLine::GPSLine() {
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
             && FindPlayerPed(0)
             && DistanceBetweenPoints(CVector2D(FindPlayerCoors(0)),
-                CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) < DISABLE_PROXIMITY)
+                CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= DISABLE_PROXIMITY)
         {
             this->once = false;
             CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
@@ -215,7 +215,7 @@ GPSLine::GPSLine() {
         {
             CVector destPosn = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
             if (!this->once) {
-                this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z));
+                this->Log(std::string("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z)).c_str());
                 this->once = true;
             }
             this->targetRouteShown = false;
@@ -276,16 +276,16 @@ GPSLine::GPSLine() {
     };
 }
 
-void GPSLine::Log(std::string val) {
+void GPSLine::Log(const char* val) {
     if (this->logLines < 96) {
         time_t timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         char stime[128];
         strftime(stime, 128, "%c", localtime(&timenow));
-        this->logfile << stime << " | " << val.c_str() << '\n';
+        this->logfile << stime << " | " << val << '\n';
     }
     else {
         this->logfile.close();
-        this->logfile.open("SA.GPS.CONF.ini", std::ios::out);
+        this->logfile.open("SA.GPS.CONF.ini", std::ios::out | std::ios::trunc);
         this->logLines = 0;
         Log(val);
     }
