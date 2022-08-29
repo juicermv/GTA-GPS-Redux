@@ -18,6 +18,8 @@ If you'd like to contribute, go ahead.
 2. Via asi loader/scripts folder
     - Drop/extract all the files in this archive into your scripts folder.
 
+---
+
 ## Default config:
 `SA.GPS.CONF.ini`
 ```ini
