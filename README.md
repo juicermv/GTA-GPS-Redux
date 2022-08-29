@@ -12,11 +12,11 @@ If you'd like to contribute, go ahead.
 ## Installation
 
 1. Via modloader
-    - Create a new folder under your "modloader" folder. You can name it whatever you want.
-    - Drop/extract all the files in this archive into that folder.
+    - Create a new folder inside your modloader folder. You can name it whatever you want.
+    - Drop/extract all the files from the release archive you downloaded into that folder.
 
 2. Via asi loader/scripts folder
-    - Drop/extract all the files in this archive into your scripts folder.
+    - Drop/extract all the files from the release archive you downloaded into your scripts folder.
 
 ## Default config:
 `SA.GPS.CONF.ini`
