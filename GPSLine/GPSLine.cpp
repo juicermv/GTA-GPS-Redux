@@ -282,10 +282,12 @@ void GPSLine::Log(const char* val) {
         char stime[128];
         strftime(stime, 128, "%c", localtime(&timenow));
         this->logfile << stime << " | " << val << '\n';
+        this->logfile.flush();
+        this->logLines++;
     }
     else {
         this->logfile.close();
-        this->logfile.open("SA.GPS.CONF.ini", std::ios::out | std::ios::trunc);
+        this->logfile.open("SA.GPS.CONF.ini", std::ios::out);
         this->logLines = 0;
         Log(val);
     }
