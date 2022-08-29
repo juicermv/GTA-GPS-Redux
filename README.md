@@ -16,13 +16,18 @@ If you'd like to contribute, go ahead.
 [Navigation Config]
 
 ; Self explanatory. Can be any value technically.
-Navigation line width = 4.0
+Navigation line width = 2.5
 
 ; Also self explanatory. 0-255
 Navigation line opacity = 255
 
 ; Self explanatory once again. 0/1
 Enable navigation on bicycles = 0
+
+; This value sets how close you have to be before the
+; navigation line stops showing. Also automatically
+; removes waypoint. 
+Navigation line removal proximity = 25.0
 
 
 ; These settings are specific to the GPS
@@ -38,10 +43,6 @@ Waypoint line green = 24
  
 ; B color value. 0-255
 Waypoint line blue = 24
-
-; How close you need to get before the waypoint automatically disappears.
-; Can be any positive value.
-Waypoint removal distance = 10.0
 ```
 ---
 ### This mod uses the following libraries:
