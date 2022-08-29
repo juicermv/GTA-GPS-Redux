@@ -199,7 +199,11 @@ GPSLine::GPSLine() {
         }
     };
 
-    
+    plugin::Events::reInitGameEvent += [this]() {
+        this->logfile.close();
+        this->logLines = 0;
+        this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
+    };
 
     plugin::Events::drawRadarOverlayEvent += [this]() {
         CPed* playa = FindPlayerPed(0);
@@ -215,7 +219,7 @@ GPSLine::GPSLine() {
         {
             CVector destPosn = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
             if (!this->once) {
-                this->Log(std::string("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z)).c_str());
+                this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z));
                 this->once = true;
             }
             this->targetRouteShown = false;
@@ -231,44 +235,51 @@ GPSLine::GPSLine() {
             && !CheckBMX()
             && CTheScripts::IsPlayerOnAMission())
         {
+            std::vector<tRadarTrace> traces;    // Couldn't use std::map due to some error in
+            std::vector<float> trace_distances; // xstddef.
             this->Log("Looking for mission objective blip.");
-            for (int i = 0; i < 174; i++) {
+
+            for (int i = 0; i < 174; i++) 
+            {
+
                 tRadarTrace trace = CRadar::ms_RadarTrace[i];
-                this->Log((int)trace.m_nBlipType + ", " + (int)trace.m_nRadarSprite);
-                if (trace.m_nRadarSprite == 0 && trace.m_nBlipDisplay > 1 && DistanceBetweenPoints(playa->GetPosition(), trace.m_vecPos) > DISABLE_PROXIMITY) {
-                    this->Log("Found mission objective blip.");
-                    CVector destVec;
-                    switch (trace.m_nBlipType) {
-                    case 1:
-                        destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
-                        break;
-                    case 2:
-                        destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
-                        break;
-                    case 3:
-                        destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
-                        break;
-                    case 6: // Searchlights
-                    case 8: // Airstripts
-                    case 0: // NONE???
-                        return;
-                    case 7: // Pickups
-                        this->Log("Pickup detected. Not providing GPS navigation.");
-                        return;
-                    default:
-                        destVec = trace.m_vecPos;
-                        break;
-                    }
-                    
-                    this->missionRouteShown = false;
-                    this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, missionDistance);
-                    this->renderPath(trace.m_nColour, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
+
+                if 
+                (
+                    trace.m_nRadarSprite == 0 
+                    && trace.m_nBlipDisplay > 1 
+                    && DistanceBetweenPoints(FindPlayerCoors(0), trace.m_vecPos) > DISABLE_PROXIMITY
+                ) 
+                {
+                    this->Log("Found contender.");
+
+                    traces.push_back(trace);
+                    trace_distances.push_back
+                    (
+                        DistanceBetweenPoints(FindPlayerCoors(0), trace.m_vecPos)
+                    );
                 }
+
             }
 
-            
-        }
+            this->Log(this->VectorToString(traces));
 
+            if (traces.size() > 0) {
+                this->renderMissionTrace(
+                    traces
+                    [
+                        std::distance
+                        (
+                            trace_distances.begin(),
+                            std::min_element
+                            (
+                                trace_distances.begin(), trace_distances.end()
+                            )
+                        )
+                    ]
+                );
+            }
+        }
     };
 
     plugin::Events::shutdownRwEvent += [this]() {
@@ -276,19 +287,58 @@ GPSLine::GPSLine() {
     };
 }
 
-void GPSLine::Log(const char* val) {
-    if (this->logLines < 96) {
+void GPSLine::renderMissionTrace(tRadarTrace trace) {
+    this->Log("Found mission objective blip.");
+
+    CVector destVec;
+    switch (trace.m_nBlipType) {
+    case 1:
+        destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
+        break;
+    case 2:
+        destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
+        break;
+    case 3:
+        destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
+        break;
+    case 6: // Searchlights
+    case 8: // Airstripts
+    case 0: // NONE???
+        return;
+    case 7: // Pickups
+        this->Log("Pickup detected. Not providing GPS navigation.");
+        return;
+    default:
+        destVec = trace.m_vecPos;
+        break;
+    }
+
+    this->missionRouteShown = false;
+    this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, missionDistance);
+    this->renderPath(trace.m_nColour, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
+}
+
+void GPSLine::Log(std::string val) {
+    if (this->logLines < 512) {
         time_t timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         char stime[128];
         strftime(stime, 128, "%c", localtime(&timenow));
-        this->logfile << stime << " | " << val << '\n';
+        this->logfile << (std::string(stime) + " | " + val + "\n").c_str();
         this->logfile.flush();
         this->logLines++;
     }
     else {
         this->logfile.close();
-        this->logfile.open("SA.GPS.CONF.ini", std::ios::out);
+        this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
         this->logLines = 0;
         Log(val);
     }
+}
+
+std::string GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
+    std::string out;
+    for (int i = 0; i < (int)vec.size() - 1; i++) {
+        out += std::to_string((int)vec[i].m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(FindPlayerCoors(0), vec[i].m_vecPos)) + "\n\t";
+    }
+    return out;
 }

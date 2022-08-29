@@ -10,6 +10,8 @@
 #include <string>
 #include <chrono>
 #include <ctime>
+#include <vector>
+#include <algorithm>
 
 #include "inipp.h"
 
@@ -61,7 +63,7 @@ private:
     //Logging stuff
     int GPSLine::logLines;
     std::ofstream GPSLine::logfile;
-    void GPSLine::Log(const char* val);
+    void GPSLine::Log(std::string val);
     bool once;
 
     // These variables will be used for the gps route following the target blip set by the player
@@ -87,12 +89,16 @@ private:
 
     bool GPSLine::CheckBMX();
 
+    std::string GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
+
     void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, bool friendly);
 
     // Self explanatory.
     void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
 
     void GPSLine::renderPath(short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
+
+    void GPSLine::renderMissionTrace(tRadarTrace trace);
 
 public:
 
