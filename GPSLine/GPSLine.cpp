@@ -24,7 +24,7 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
     }
 }
 
-void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, bool friendly) {
+void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance) {
     vertex.x = x;
     vertex.y = y;
     vertex.u = vertex.v = 0.0f;
@@ -39,7 +39,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
     case 1: // GREEN
         r = plugin::color::Chartreuse.r; g = plugin::color::Chartreuse.g; b = plugin::color::Chartreuse.b; break;
     case 2: // BLUE
-        r = plugin::color::DarkBlue.r; g = plugin::color::DarkBlue.g; b = plugin::color::DarkBlue.b; break;
+        r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b; break;
     case 3: // WHITE
         r = plugin::color::White.r; g = plugin::color::White.g; b = plugin::color::White.b; break;
     case 4: // YELLOW
@@ -49,15 +49,21 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
     case 6: // CYAN
         r = plugin::color::Cyan.r; g = plugin::color::Cyan.g; b = plugin::color::Cyan.b; break;
     case 7: // Depends on whether blip is friendly
-        if (friendly) {
-            r = plugin::color::DarkBlue.r; g = plugin::color::DarkBlue.g; b = plugin::color::DarkBlue.b;
+        if (appearance == BLIP_FLAG_THREAT) { // For some reason this is flipped?
+            r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b;
         }
         else {
             r = plugin::color::Red.r; g = plugin::color::Red.g; b = plugin::color::Red.b;
         }
         break;
     case 8: // DESTINATION
-        r = plugin::color::Gold.r; g = plugin::color::Gold.g; b = plugin::color::Gold.b; break;
+        if (appearance == BLIP_FLAG_THREAT) {
+            r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b;
+        }
+        else {
+            r = plugin::color::Gold.r; g = plugin::color::Gold.g; b = plugin::color::Gold.b;
+        }
+        break;
     default:
         r = GPS_LINE_R; g = GPS_LINE_G; b = GPS_LINE_B; break;
     }
@@ -65,7 +71,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
     vertex.emissiveColor = RWRGBALONG(r, g, b, GPS_LINE_A);
 }
 
-void GPSLine::renderPath(short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
+void GPSLine::renderPath(short color, unsigned char appearance, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
     if (nodesCount <= 0) {
         return;
     }
@@ -111,10 +117,10 @@ void GPSLine::renderPath(short color, bool friendly, short& nodesCount, bool& gp
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
             shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
         }
-        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color, appearance);
+        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color, appearance);
+        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color, appearance);
+        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color, appearance);
         vertIndex += 4;
     }
 
@@ -224,7 +230,7 @@ GPSLine::GPSLine() {
             }
             this->targetRouteShown = false;
             this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, targetDistance);
-            this->renderPath(-1, true, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
+            this->renderPath(-1, 0, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
         }
 
         if (playa
@@ -315,7 +321,7 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
 
     this->missionRouteShown = false;
     this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, missionDistance);
-    this->renderPath(trace.m_nColour, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
+    this->renderPath(trace.m_nColour, trace.m_nCoordBlipAppearance, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
 }
 
 void GPSLine::Log(std::string val) {

@@ -91,12 +91,12 @@ private:
 
     std::string GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
 
-    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, bool friendly);
+    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance);
 
     // Self explanatory.
     void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
 
-    void GPSLine::renderPath(short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
+    void GPSLine::renderPath(short color, unsigned char appearance, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
 
     void GPSLine::renderMissionTrace(tRadarTrace trace);
 
