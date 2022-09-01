@@ -89,7 +89,7 @@ private:
 
     bool GPSLine::CheckBMX();
 
-    std::string GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
+    const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
 
     void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance);
 

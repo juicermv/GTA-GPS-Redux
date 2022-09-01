@@ -218,6 +218,7 @@ GPSLine::GPSLine() {
             && playa->m_nPedFlags.bInVehicle
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
+            && playa->m_nStatus != STATUS_REMOTE_CONTROLLED
             && !CheckBMX()
             && FrontEndMenuManager.m_nTargetBlipIndex
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
@@ -238,6 +239,7 @@ GPSLine::GPSLine() {
             && playa->m_nPedFlags.bInVehicle
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
+            && playa->m_nStatus != STATUS_REMOTE_CONTROLLED
             && !CheckBMX()
             && CTheScripts::IsPlayerOnAMission())
         {
@@ -268,9 +270,8 @@ GPSLine::GPSLine() {
 
             }
 
-            this->Log(this->VectorToString(traces));
-
             if (traces.size() > 0) {
+                this->Log(this->VectorToString(traces));
                 this->renderMissionTrace(
                     traces
                     [
@@ -325,7 +326,7 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
 }
 
 void GPSLine::Log(std::string val) {
-    if (this->logLines < 512) {
+    if (this->logLines < 2048) {
         time_t timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         char stime[128];
         strftime(stime, 128, "%c", localtime(&timenow));
@@ -341,10 +342,10 @@ void GPSLine::Log(std::string val) {
     }
 }
 
-std::string GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
+const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
     std::string out;
     for (int i = 0; i < (int)vec.size() - 1; i++) {
-        out += std::to_string((int)vec[i].m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(FindPlayerCoors(0), vec[i].m_vecPos)) + "\n\t";
+        out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(FindPlayerCoors(0), vec.at(i).m_vecPos)) + "\n\t";
     }
-    return out;
+    return out.c_str();
 }

@@ -42,7 +42,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA Release|Win32'">
-    <OutDir>$(GTA_SA_DIR)\modloader\GPS REDUX</OutDir>
+    <OutDir>$(GTA_SA_DIR)\modloader\GPS Redux</OutDir>
     <IntDir>$(ProjectDir).obj\GTASA\Release\</IntDir>
     <TargetName>SA.GPS.REDUX</TargetName>
     <TargetExt>.asi</TargetExt>
@@ -50,7 +50,7 @@
     <LibraryPath>$(LibraryPath);$(DIRECTX9_SDK_DIR)\Lib\x86\</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA zDebug|Win32'">
-    <OutDir>$(GTA_SA_DIR)\modloader\GPS REDUX</OutDir>
+    <OutDir>$(GTA_SA_DIR)\modloader\GPS Redux</OutDir>
     <IntDir>$(ProjectDir).obj\GTASA\Debug\</IntDir>
     <TargetName>SA.GPS.REDUX</TargetName>
     <TargetExt>.asi</TargetExt>
