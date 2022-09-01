@@ -3,7 +3,6 @@
 This is a fork of the fixed GPS version by JuniorDjjr. It includes automatic navigation for mission markers.
 If you'd like to contribute, go ahead.
 
-
     Warning: This mod is still in the testing phase, if you find any 
     bugs, please report them as issues on this github repo.
 
