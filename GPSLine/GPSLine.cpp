@@ -5,7 +5,7 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
 
     ThePaths.DoPathSearch
     (
-        0, 
+        0,
         FindPlayerCoors(0), 
         CNodeAddress(), 
         destPosn, 
@@ -280,7 +280,7 @@ GPSLine::GPSLine() {
                     traces.push_back(trace);
 
                     if (trace.m_nColour == 8)
-                        trace_distances.push_back(-99); // Prioritize destination markers.
+                        trace_distances.push_back(FLT_MAX); // Prioritize destination markers.
                     else
                         trace_distances.push_back
                         (
@@ -302,7 +302,7 @@ GPSLine::GPSLine() {
                         std::distance
                         (
                             trace_distances.begin(),
-                            std::min_element
+                            std::max_element
                             (
                                 trace_distances.begin(), trace_distances.end()
                             )

@@ -12,6 +12,7 @@
 #include <ctime>
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 #include "inipp.h"
 
