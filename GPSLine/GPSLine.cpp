@@ -3,8 +3,24 @@
 void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance) {
     destPosn.z = CWorld::FindGroundZForCoord(destPosn.x, destPosn.y);
 
-    ThePaths.DoPathSearch(0, FindPlayerCoors(0), CNodeAddress(), destPosn, resultNodes, &nodesCount, MAX_NODE_POINTS, &gpsDistance,
-        999999.0f, NULL, 999999.0f, false, CNodeAddress(), false, FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT);
+    ThePaths.DoPathSearch
+    (
+        0, 
+        FindPlayerCoors(0), 
+        CNodeAddress(), 
+        destPosn, 
+        resultNodes, 
+        &nodesCount, 
+        MAX_NODE_POINTS, 
+        &gpsDistance,
+        999999.0f, 
+        NULL, 
+        999999.0f, 
+        true, // Respect rules of traffic
+        CNodeAddress(), 
+        false, 
+        FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT
+    );
 
     if (nodesCount > 0) {
         for (short i = 0; i < nodesCount; i++) {
