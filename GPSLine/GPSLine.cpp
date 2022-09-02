@@ -245,6 +245,7 @@ GPSLine::GPSLine() {
         {
             std::vector<tRadarTrace> traces;    // Couldn't use std::map due to some error in
             std::vector<float> trace_distances; // xstddef.
+
             this->Log("Looking for mission objective blip.");
 
             for (int i = 0; i < 174; i++) 
@@ -260,12 +261,19 @@ GPSLine::GPSLine() {
                 ) 
                 {
                     this->Log("Found contender.");
-
                     traces.push_back(trace);
-                    trace_distances.push_back
-                    (
-                        DistanceBetweenPoints(FindPlayerCoors(0), trace.m_vecPos)
-                    );
+
+                    if (trace.m_nColour == 8)
+                        trace_distances.push_back(-99); // Prioritize destination markers.
+                    else
+                        trace_distances.push_back
+                        (
+                            DistanceBetweenPoints
+                            (
+                                FindPlayerCoors(0), 
+                                trace.m_vecPos
+                            )
+                        );
                 }
 
             }
