@@ -16,7 +16,7 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
         999999.0f, 
         NULL, 
         999999.0f, 
-        true, // Respect rules of traffic
+        FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_AUTOMOBILE, // Respect rules of traffic (only if in car)
         CNodeAddress(), 
         false, 
         FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT
@@ -93,8 +93,11 @@ void GPSLine::renderPath(short color, unsigned char appearance, bool friendly, s
     }
 
 
-    if (!FrontEndMenuManager.m_bDrawRadarOrMap
-        && reinterpret_cast<D3DCAPS9 const*>(RwD3D9GetCaps())->RasterCaps & D3DPRASTERCAPS_SCISSORTEST)
+    if 
+    (
+        !FrontEndMenuManager.m_bDrawRadarOrMap
+        && reinterpret_cast<D3DCAPS9 const*>(RwD3D9GetCaps())->RasterCaps & D3DPRASTERCAPS_SCISSORTEST
+    )
     {
         RECT rect;
         CVector2D posn;
