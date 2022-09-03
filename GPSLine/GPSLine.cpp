@@ -14,9 +14,14 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
         MAX_NODE_POINTS, 
         &gpsDistance,
         999999.0f, 
-        NULL, 
+        NULL,
         999999.0f, 
-        FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_AUTOMOBILE, // Respect rules of traffic (only if in car)
+        ( // Respect rules of traffic (only if in valid vehicle)
+            FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_AUTOMOBILE 
+            || FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_MTRUCK
+            || FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BIKE
+            || FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_QUAD
+        ), 
         CNodeAddress(), 
         false, 
         FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT
