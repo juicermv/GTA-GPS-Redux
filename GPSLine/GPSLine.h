@@ -12,6 +12,7 @@
 #include <ctime>
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 #include "inipp.h"
 
@@ -91,12 +92,12 @@ private:
 
     const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
 
-    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance);
+    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance, bool friendly);
 
     // Self explanatory.
     void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
 
-    void GPSLine::renderPath(short color, unsigned char appearance, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
+    void GPSLine::renderPath(short color, unsigned char appearance, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
 
     void GPSLine::renderMissionTrace(tRadarTrace trace);
 
