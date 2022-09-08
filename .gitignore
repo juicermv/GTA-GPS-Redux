@@ -34,3 +34,6 @@
 # Visual Studio sutff
 .vs/
 .vscode/
+
+# Clangd project configuration file
+.clangd
