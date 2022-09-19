@@ -1,3 +1,7 @@
+# WARNING
+This branch is purely experimental and **has not been tested**.
+Compile at your own accord.
+
 # GTA SA GPS Reudx
 
 This is a fork of the fixed GPS version by JuniorDjjr. It includes automatic navigation for mission markers.

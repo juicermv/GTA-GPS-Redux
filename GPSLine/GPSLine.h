@@ -14,6 +14,12 @@
 #include <algorithm>
 #include <limits>
 
+#include <Windows.h>
+#include <Psapi.h>
+
+#pragma comment( lib, "psapi.lib" )
+#pragma comment( lib, "kernel32.lib" )
+
 #include "inipp.h"
 
 #include "plugin.h"
@@ -46,8 +52,21 @@
     #define MAX_TARGET_DISTANCE 10.0f
 */
 
+#define E_ADDR_GAMEPROCESS	0x53E981
+
+#pragma pack(push, 1)
+typedef struct stOpcodeRelCall
+{
+    BYTE bOpcode;
+    DWORD dwRelAddr;
+} OpcodeRelCall;
+#pragma pack(pop)
+
 class GPSLine {
 private:
+
+    HANDLE GPSLine::hThread = NULL;
+
     // Ini Config stuff
     inipp::Ini<char> iniParser;
     std::ifstream iniFile;
@@ -99,10 +118,14 @@ private:
     CVector2D GPSLine::m_NodePoints[MAX_NODE_POINTS];
     RwIm2DVertex GPSLine::m_LineVerts[MAX_NODE_POINTS * 4];
 
+    static LPVOID WINAPI init(LPVOID* lpParam);
+
     char GPSLine::pathNodesToStream[1024];
     int GPSLine::pathNodes[50000];
 
     bool GPSLine::CheckBMX();
+
+    void GPSLine::Run();
 
     const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
 
@@ -120,5 +143,6 @@ private:
 public:
 
     GPSLine();
+    ~GPSLine();
 
 } gPSLine;
