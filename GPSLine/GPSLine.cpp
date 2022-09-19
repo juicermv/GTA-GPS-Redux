@@ -260,8 +260,6 @@ void GPSLine::Run() {
 
     inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", ENABLE_CUSTOM_CLRS);
 
-    iniFile.close();
-
     // Parse custom colors
     if (ENABLE_CUSTOM_CLRS) {
         this->Log("Custom colors enabled.");
@@ -288,6 +286,8 @@ void GPSLine::Run() {
         inipp::get_value(iniParser.sections["Custom Colors"], "Cyan", buffer);
         CC_CYAN = this->ExtractColorFromString(buffer);
     }
+
+    iniFile.close();
 
     for (int i = 0; i < 1024; i++) {
         pathNodesToStream[i] = 1;
