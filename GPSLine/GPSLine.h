@@ -64,7 +64,7 @@ private:
     static inline bool GPSLine::ENABLE_MOVING = -1;
     
     // Custom Colors config
-    static inline bool GPSLine::ENABLE_CUSTOM_CLRS;
+    static inline bool GPSLine::ENABLE_CUSTOM_CLRS = -1;
     static inline CRGBA 
         GPSLine::CC_RED, 
         GPSLine::CC_GREEN, 

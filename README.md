@@ -23,14 +23,16 @@ If you'd like to contribute, go ahead.
 ; This applies to all GPS routes
 [Navigation Config]
 
-; Self explanatory. Can be any value technically.
+; Self explanatory. Can be any positive value.
 Navigation line width = 2.5
-
-; Also self explanatory. 0-255
-Navigation line opacity = 255
 
 ; Self explanatory once again. 0/1
 Enable navigation on bicycles = 0
+
+; GTA V does not provide GPS routes for moving
+; targets like cars and peds. If you'd like to
+; enable navigation for these objects set this to 1. 0/1
+Enable navigation for moving targets = 0
 
 ; This value sets how close you have to be before the
 ; navigation line stops showing. Also automatically
@@ -51,6 +53,37 @@ Waypoint line green = 24
  
 ; B color value. 0-255
 Waypoint line blue = 24
+
+; Self explanatory. 0-255
+Waypoint line opacity = 255
+
+; These settings allow you to set custom colors
+; for the various navigation paths in missions.
+; Each color is represented by RGBA values separated
+; by , .
+[Custom Colors]
+
+; Self explanatory. 0/1
+Enabled = 0
+
+; Used for enemies.
+Red = 255, 0 , 0, 255
+
+; Used for pickups and other things.
+Green = 0, 255, 0, 255
+
+; Used for friendlies.
+Blue = 0, 0, 255, 255
+
+; Not really used as far as I've seen.
+White = 255, 255, 255, 255
+
+; Used for destinations.
+Yellow = 255, 255, 0
+
+; These two aren't really used either.
+Purple = 255, 0, 255, 255
+Cyan = 0, 255, 255, 255
 ```
 ---
 ### This mod uses the following libraries:

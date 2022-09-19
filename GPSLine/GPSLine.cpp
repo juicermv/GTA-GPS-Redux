@@ -53,8 +53,9 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
     vertex.rhw = CSprite2d::RecipNearClip;
     CRGBA clr;
 
-    if(ENABLE_CUSTOM_CLRS)
-        switch (color) 
+    if (ENABLE_CUSTOM_CLRS)
+    {
+        switch (color)
         {
             case 0: // RED
                 clr = CC_RED; break;
@@ -71,7 +72,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
             case 6: // CYAN
                 clr = CC_CYAN; break;
             case 7: // Depends on whether blip is friendly
-                if (friendly) { 
+                if (friendly) {
                     // BLUE
                     clr = CC_BLUE;
                 }
@@ -91,8 +92,8 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
                 }
                 break;
         }
-    else
-        clr = CRadar::GetRadarTraceColour(color, 1, friendly);
+    }
+    else clr = CRadar::GetRadarTraceColour(color, 1, friendly);
 
     if(color < 1 || color > 8)
         clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B, GPS_LINE_A);
@@ -203,6 +204,7 @@ GPSLine::GPSLine() {
     // Parse custom colors
     inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", ENABLE_CUSTOM_CLRS);
     if (ENABLE_CUSTOM_CLRS) {
+        this->Log("Custom colors enabled.");
         std::string buffer;
 
         inipp::get_value(iniParser.sections["Custom Colors"], "Red", buffer);
@@ -369,12 +371,16 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
     CVector destVec;
     switch (trace.m_nBlipType) {
     case 1:
-        if(ENABLE_MOVING)
+        if (ENABLE_MOVING)
             destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
+        else
+            return;
         break;
     case 2:
         if(ENABLE_MOVING)
             destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
+        else
+            return;
         break;
     case 3:
         destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
@@ -422,6 +428,9 @@ const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
 }
 
 CRGBA GPSLine::ExtractColorFromString(std::string in) {
+    // Remove whitespace
+    in.erase(std::remove_if(in.begin(), in.end(), isspace), in.end());
+
     size_t pos = 0;
     int 
         R = 0, 
@@ -437,7 +446,9 @@ CRGBA GPSLine::ExtractColorFromString(std::string in) {
         didA = false
     ;
 
-    while ((pos = in.find(",")) != std::string::npos) {
+    for (int i = 0; i < 4; i++) {
+        pos = in.find(",");
+
         if (!didR) {
             R = std::stoi(in.substr(0, pos));
             didR = true;
@@ -454,6 +465,8 @@ CRGBA GPSLine::ExtractColorFromString(std::string in) {
             A = std::stoi(in.substr(0, pos));
             didA = true;
         }
+
+        in.erase(0, pos + 1);
     }
     
     return CRGBA(R, G, B, A);
