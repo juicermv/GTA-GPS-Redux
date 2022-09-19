@@ -1,6 +1,6 @@
 # WARNING
 This branch is purely experimental and **has not been tested**.
-Compile at your own accord. Made possible by @jandlapuk.
+Compile at your own accord. Made possible by [@jandlapuk].
 
 # GTA SA GPS Reudx
 
