@@ -201,8 +201,11 @@ GPSLine::GPSLine() {
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line blue", GPS_LINE_B);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line opacity", GPS_LINE_A);
 
-    // Parse custom colors
     inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", ENABLE_CUSTOM_CLRS);
+
+    iniFile.close();
+
+    // Parse custom colors
     if (ENABLE_CUSTOM_CLRS) {
         this->Log("Custom colors enabled.");
         std::string buffer;
@@ -228,8 +231,6 @@ GPSLine::GPSLine() {
         inipp::get_value(iniParser.sections["Custom Colors"], "Cyan", buffer);
         CC_CYAN = this->ExtractColorFromString(buffer);
     }
-
-    iniFile.close();
 
     for (int i = 0; i < 1024; i++) {
         pathNodesToStream[i] = 1;
