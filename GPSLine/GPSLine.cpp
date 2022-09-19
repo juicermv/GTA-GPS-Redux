@@ -57,37 +57,37 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
         switch (color) 
         {
             case 0: // RED
-                clr = CRGBA(); break;
+                clr = CC_RED; break;
             case 1: // GREEN
-                clr = CRGBA(); break;
+                clr = CC_GREEN; break;
             case 2: // BLUE
-                clr = CRGBA(); break;
+                clr = CC_BLUE; break;
             case 3: // WHITE
-                clr = CRGBA(); break;
+                clr = CC_WHITE; break;
             case 4: // YELLOW
-                clr = CRGBA(); break;
+                clr = CC_YELLOW; break;
             case 5: // PURPLE
-                clr = CRGBA(); break;
+                clr = CC_PURPLE; break;
             case 6: // CYAN
-                clr = CRGBA(); break;
+                clr = CC_CYAN; break;
             case 7: // Depends on whether blip is friendly
                 if (friendly) { 
                     // BLUE
-                    clr = CRGBA();
+                    clr = CC_BLUE;
                 }
                 else {
                     // RED
-                    clr = CRGBA();
+                    clr = CC_RED;
                 }
                 break;
             case 8: // DESTINATION
                 if (appearance == BLIP_FLAG_THREAT) { // For some reason this is flipped?
                     // BLUE
-                    clr = CRGBA();
+                    clr = CC_BLUE;
                 }
                 else {
                     // YELLOW
-                    clr = CRGBA();
+                    clr = CC_YELLOW;
                 }
                 break;
         }
@@ -95,9 +95,9 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
         clr = CRadar::GetRadarTraceColour(color, 1, friendly);
 
     if(color < 1 || color > 8)
-        clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B);
+        clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B, GPS_LINE_A);
 
-    vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, GPS_LINE_A);
+    vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, clr.a);
 }
 
 void GPSLine::renderPath(short color, unsigned char appearance, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
@@ -191,13 +191,41 @@ GPSLine::GPSLine() {
     iniParser.generate(this->logfile);
 
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line opacity", GPS_LINE_A);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", DISABLE_PROXIMITY);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", GPS_LINE_G);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line blue", GPS_LINE_B);
+    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line opacity", GPS_LINE_A);
+
+    // Parse custom colors
+    inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", ENABLE_CUSTOM_CLRS);
+    if (ENABLE_CUSTOM_CLRS) {
+        std::string buffer;
+
+        inipp::get_value(iniParser.sections["Custom Colors"], "Red", buffer);
+        CC_RED = this->ExtractColorFromString(buffer);
+
+        inipp::get_value(iniParser.sections["Custom Colors"], "Green", buffer);
+        CC_GREEN = this->ExtractColorFromString(buffer);
+
+        inipp::get_value(iniParser.sections["Custom Colors"], "Blue", buffer);
+        CC_BLUE = this->ExtractColorFromString(buffer);
+
+        inipp::get_value(iniParser.sections["Custom Colors"], "White", buffer);
+        CC_WHITE = this->ExtractColorFromString(buffer);
+
+        inipp::get_value(iniParser.sections["Custom Colors"], "Yellow", buffer);
+        CC_YELLOW = this->ExtractColorFromString(buffer);
+
+        inipp::get_value(iniParser.sections["Custom Colors"], "Purple", buffer);
+        CC_PURPLE = this->ExtractColorFromString(buffer);
+
+        inipp::get_value(iniParser.sections["Custom Colors"], "Cyan", buffer);
+        CC_CYAN = this->ExtractColorFromString(buffer);
+    }
+
     iniFile.close();
 
     for (int i = 0; i < 1024; i++) {
@@ -388,4 +416,42 @@ const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
         out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(FindPlayerCoors(0), vec.at(i).m_vecPos)) + "\n\t";
     }
     return out.c_str();
+}
+
+CRGBA GPSLine::ExtractColorFromString(std::string in) {
+    size_t pos = 0;
+    int 
+        R = 0, 
+        G = 0,
+        B = 0,
+        A = 0
+    ;
+    
+    bool 
+        didR = false, 
+        didG = false,
+        didB = false,
+        didA = false
+    ;
+
+    while ((pos = in.find(",")) != std::string::npos) {
+        if (!didR) {
+            R = std::stoi(in.substr(0, pos));
+            didR = true;
+        }
+        else if (!didG) {
+            G = std::stoi(in.substr(0, pos));
+            didG = true;
+        }
+        else if (!didB) {
+            B = std::stoi(in.substr(0, pos));
+            didB = true;
+        }
+        else if (!didA) {
+            A = std::stoi(in.substr(0, pos));
+            didA = true;
+        }
+    }
+    
+    return CRGBA(R, G, B, A);
 }

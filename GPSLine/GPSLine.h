@@ -61,7 +61,19 @@ private:
     static inline short GPSLine::GPS_LINE_A = -1;
     static inline float GPSLine::DISABLE_PROXIMITY = -1;
     static inline bool GPSLine::ENABLE_BMX = -1;
+    static inline bool GPSLine::ENABLE_MOVING = -1;
+    
+    // Custom Colors config
     static inline bool GPSLine::ENABLE_CUSTOM_CLRS;
+    static inline CRGBA 
+        GPSLine::CC_RED, 
+        GPSLine::CC_GREEN, 
+        GPSLine::CC_BLUE, 
+        GPSLine::CC_WHITE, 
+        GPSLine::CC_YELLOW, 
+        GPSLine::CC_PURPLE,
+        GPSLine::CC_CYAN
+    ;
 
     //Logging stuff
     int GPSLine::logLines;
@@ -93,6 +105,8 @@ private:
     bool GPSLine::CheckBMX();
 
     const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
+
+    CRGBA GPSLine::ExtractColorFromString(std::string in);
 
     void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance, bool friendly);
 
