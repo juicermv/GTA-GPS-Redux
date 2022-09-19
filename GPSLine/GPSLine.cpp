@@ -192,6 +192,7 @@ GPSLine::GPSLine() {
 
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation for moving targets", ENABLE_MOVING);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", DISABLE_PROXIMITY);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
@@ -368,10 +369,12 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
     CVector destVec;
     switch (trace.m_nBlipType) {
     case 1:
-        destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
+        if(ENABLE_MOVING)
+            destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
         break;
     case 2:
-        destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
+        if(ENABLE_MOVING)
+            destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
         break;
     case 3:
         destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
