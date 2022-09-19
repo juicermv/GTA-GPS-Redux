@@ -51,45 +51,53 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
     vertex.u = vertex.v = 0.0f;
     vertex.z = CSprite2d::NearScreenZ + 0.0001f;
     vertex.rhw = CSprite2d::RecipNearClip;
-    int r, g, b;
+    CRGBA clr;
 
-    // Placeholder colors for now. When I manage to find the original RGB values for all these I'll make them configurable as well.
-    switch (color) {
-    case 0: // RED
-        r = plugin::color::Red.r; g = plugin::color::Red.g; b = plugin::color::Red.b; break;
-    case 1: // GREEN
-        r = plugin::color::Chartreuse.r; g = plugin::color::Chartreuse.g; b = plugin::color::Chartreuse.b; break;
-    case 2: // BLUE
-        r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b; break;
-    case 3: // WHITE
-        r = plugin::color::White.r; g = plugin::color::White.g; b = plugin::color::White.b; break;
-    case 4: // YELLOW
-        r = plugin::color::Gold.r; g = plugin::color::Gold.g; b = plugin::color::Gold.b; break;
-    case 5: // PURPLE
-        r = plugin::color::Purple.r; g = plugin::color::Purple.g; b = plugin::color::Purple.b; break;
-    case 6: // CYAN
-        r = plugin::color::Cyan.r; g = plugin::color::Cyan.g; b = plugin::color::Cyan.b; break;
-    case 7: // Depends on whether blip is friendly
-        if (friendly) { 
-            r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b;
+    if(ENABLE_CUSTOM_CLRS)
+        switch (color) 
+        {
+            case 0: // RED
+                clr = CRGBA(); break;
+            case 1: // GREEN
+                clr = CRGBA(); break;
+            case 2: // BLUE
+                clr = CRGBA(); break;
+            case 3: // WHITE
+                clr = CRGBA(); break;
+            case 4: // YELLOW
+                clr = CRGBA(); break;
+            case 5: // PURPLE
+                clr = CRGBA(); break;
+            case 6: // CYAN
+                clr = CRGBA(); break;
+            case 7: // Depends on whether blip is friendly
+                if (friendly) { 
+                    // BLUE
+                    clr = CRGBA();
+                }
+                else {
+                    // RED
+                    clr = CRGBA();
+                }
+                break;
+            case 8: // DESTINATION
+                if (appearance == BLIP_FLAG_THREAT) { // For some reason this is flipped?
+                    // BLUE
+                    clr = CRGBA();
+                }
+                else {
+                    // YELLOW
+                    clr = CRGBA();
+                }
+                break;
         }
-        else {
-            r = plugin::color::Red.r; g = plugin::color::Red.g; b = plugin::color::Red.b;
-        }
-        break;
-    case 8: // DESTINATION
-        if (appearance == BLIP_FLAG_THREAT) { // For some reason this is flipped?
-            r = plugin::color::Blue.r; g = plugin::color::Blue.g; b = plugin::color::Blue.b;
-        }
-        else {
-            r = plugin::color::Gold.r; g = plugin::color::Gold.g; b = plugin::color::Gold.b;
-        }
-        break;
-    default:
-        r = GPS_LINE_R; g = GPS_LINE_G; b = GPS_LINE_B; break;
-    }
+    else
+        clr = CRadar::GetRadarTraceColour(color, 1, friendly);
 
-    vertex.emissiveColor = RWRGBALONG(r, g, b, GPS_LINE_A);
+    if(color < 1 || color > 8)
+        clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B);
+
+    vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, GPS_LINE_A);
 }
 
 void GPSLine::renderPath(short color, unsigned char appearance, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {

@@ -30,6 +30,7 @@
 #include "CPickup.h"
 #include "CPickups.h"
 #include "CTheScripts.h"
+#include "CHudColours.h"
 #include "RenderWare.h"
 #include "Color.h"
 #include "CFont.h"
@@ -60,6 +61,7 @@ private:
     static inline short GPSLine::GPS_LINE_A = -1;
     static inline float GPSLine::DISABLE_PROXIMITY = -1;
     static inline bool GPSLine::ENABLE_BMX = -1;
+    static inline bool GPSLine::ENABLE_CUSTOM_CLRS;
 
     //Logging stuff
     int GPSLine::logLines;
