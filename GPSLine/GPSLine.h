@@ -85,12 +85,12 @@ private:
     // Custom Colors config
     static inline bool GPSLine::ENABLE_CUSTOM_CLRS = -1;
     static inline CRGBA 
-        GPSLine::CC_RED, 
-        GPSLine::CC_GREEN, 
-        GPSLine::CC_BLUE, 
-        GPSLine::CC_WHITE, 
-        GPSLine::CC_YELLOW, 
+        GPSLine::CC_RED,
+        GPSLine::CC_GREEN,
+        GPSLine::CC_BLUE,
+        GPSLine::CC_WHITE,
         GPSLine::CC_PURPLE,
+        GPSLine::CC_YELLOW,
         GPSLine::CC_CYAN
     ;
 
@@ -131,12 +131,12 @@ private:
 
     CRGBA GPSLine::ExtractColorFromString(std::string in);
 
-    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance, bool friendly);
+    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance, unsigned char bright, bool friendly);
 
     // Self explanatory.
     void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
 
-    void GPSLine::renderPath(short color, unsigned char appearance, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
+    void GPSLine::renderPath(short color, unsigned char appearance, unsigned char bright, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
 
     void GPSLine::renderMissionTrace(tRadarTrace trace);
 

@@ -45,7 +45,7 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
     }
 }
 
-void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance, bool friendly) {
+void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance, unsigned char bright, bool friendly) {
     vertex.x = x;
     vertex.y = y;
     vertex.u = vertex.v = 0.0f;
@@ -101,7 +101,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
     vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, clr.a);
 }
 
-void GPSLine::renderPath(short color, unsigned char appearance, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
+void GPSLine::renderPath(short color, unsigned char appearance, unsigned char bright, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
     if (nodesCount <= 0) {
         return;
     }
@@ -150,10 +150,10 @@ void GPSLine::renderPath(short color, unsigned char appearance, bool friendly, s
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
             shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
         }
-        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color, appearance, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color, appearance, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color, appearance, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color, appearance, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color, appearance, bright, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color, appearance, bright, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color, appearance, bright, friendly);
+        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color, appearance, bright, friendly);
         vertIndex += 4;
     }
 
@@ -352,7 +352,7 @@ void GPSLine::Run() {
             }
             this->targetRouteShown = false;
             this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, targetDistance);
-            this->renderPath(-1, 0, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
+            this->renderPath(-1, 0, 1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
         }
 
         if (playa
@@ -360,7 +360,7 @@ void GPSLine::Run() {
             && playa->m_nPedFlags.bInVehicle
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
             && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
-            && playa->m_nStatus != STATUS_REMOTE_CONTROLLED
+            && !CTheScripts::bMiniGameInProgress
             && !CheckBMX()
             && CTheScripts::IsPlayerOnAMission())
         {
@@ -457,7 +457,7 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
 
     this->missionRouteShown = false;
     this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, missionDistance);
-    this->renderPath(trace.m_nColour, trace.m_nCoordBlipAppearance, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
+    this->renderPath(trace.m_nColour, trace.m_bBright, trace.m_nCoordBlipAppearance, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
 }
 
 void GPSLine::Log(std::string val) {
