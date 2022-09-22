@@ -236,10 +236,10 @@ LPVOID WINAPI GPSLine::init(LPVOID* lpParam) {
 
 void GPSLine::Run() {
     // Logging stuff
-    this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
+    this->logfile.open("SAMP.GPS.LOG.txt", std::ios::out);
 
     // Load config values from file.
-    iniFile.open("SA.GPS.CONF.ini", std::ios::in);
+    iniFile.open("SAMP.GPS.CONF.ini", std::ios::in);
     iniParser.parse(iniFile);
     this->Log("INI config loaded:");
     iniParser.generate(this->logfile);

@@ -42,7 +42,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA Release|Win32'">
-    <OutDir>$(GTA_SA_DIR)\modloader\GPS Redux</OutDir>
+    <OutDir>$(ProjectDir)\GTASA\Release\</OutDir>
     <IntDir>$(ProjectDir).obj\GTASA\Release\</IntDir>
     <TargetName>SA.GPS.REDUX</TargetName>
     <TargetExt>.asi</TargetExt>
