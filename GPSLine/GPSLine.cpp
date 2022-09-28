@@ -128,8 +128,11 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
     RwRenderStateSet(rwRENDERSTATETEXTURERASTER, NULL);
 
     unsigned int vertIndex = 0;
+    short lasti;
+    CVector2D shift[2];
     for (short i = 0; i < (nodesCount - 1); i++) {
-        CVector2D point[4], shift[3];
+        
+        // TODO: Move this (shift calculation) into a function.
         CVector2D dir = nodePoints[i + 1] - nodePoints[i]; // Direction between current node to next node
         float angle = atan2(dir.y, dir.x); // Convert direction to angle
         
@@ -194,11 +197,89 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
             friendly
         );
         
+        lasti = i+1;
         vertIndex += 4;
     }
     
-    
-    RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, lineVerts, 4 * (nodesCount - 1));
+    CVector2D targetScreen;
+    CVector2D tmpPoint;
+    CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos);
+    if (!FrontEndMenuManager.m_bDrawRadarOrMap)
+        CRadar::TransformRadarPointToScreenSpace(targetScreen, tmpPoint);
+    else {
+        CRadar::LimitRadarPoint(tmpPoint);
+        CRadar::TransformRadarPointToScreenSpace(targetScreen, tmpPoint);
+        targetScreen.x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
+        targetScreen.y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
+        CRadar::LimitToMap(&targetScreen.x, &targetScreen.y);
+    }
+
+    CVector2D dir = targetScreen - nodePoints[lasti]; // Direction between current node to next node
+    float angle = atan2(dir.y, dir.x); // Convert direction to angle
+
+    if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
+        // 1.5707963 radians = 90 degrees
+
+        shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH;
+        shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH;
+        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH;
+        shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH;
+    }
+    else {
+        float mp = FrontEndMenuManager.m_fMapZoom - 140.0f;
+        if (mp < 140.0f)
+            mp = 140.0f;
+        else if (mp > 960.0f)
+            mp = 960.0f;
+        mp = mp / 960.0f + 0.4f;
+        shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
+    }
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex+0],           // NextNode - NextNode*
+        nodePoints[lasti].x + shift[0].x,   //    |             |
+        nodePoints[lasti].y + shift[0].y,   // CurrentNode - CurrentNode
+        color,                              //
+        appearance,
+        bright,
+        friendly
+    );
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex+1],
+        nodePoints[lasti].x + shift[1].x,
+        nodePoints[lasti].y + shift[1].y,
+        color,
+        appearance,
+        bright,
+        friendly
+    );
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex + 2],
+        targetScreen.x + shift[0].x,
+        targetScreen.y + shift[0].y,
+        color,
+        appearance,
+        0,
+        friendly
+    );
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex+3],
+        targetScreen.x + shift[1].x,
+        targetScreen.y + shift[1].y,
+        color,
+        appearance,
+        0,
+        friendly
+    );
+
+    RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, lineVerts, 4 * (nodesCount));
+    //RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, targetVertices, 4);
 
     if (!FrontEndMenuManager.m_bDrawRadarOrMap
         && reinterpret_cast<D3DCAPS9 const*>(RwD3D9GetCaps())->RasterCaps & D3DPRASTERCAPS_SCISSORTEST)
