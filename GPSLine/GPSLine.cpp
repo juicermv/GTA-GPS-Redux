@@ -239,10 +239,10 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
     }
 
     this->Setup2dVertex(
-        lineVerts[vertIndex+0],           // NextNode - NextNode*
-        nodePoints[lasti].x + shift[0].x,   //    |             |
-        nodePoints[lasti].y + shift[0].y,   // CurrentNode - CurrentNode
-        color,                              //
+        lineVerts[vertIndex+0],
+        nodePoints[lasti].x + shift[0].x,
+        nodePoints[lasti].y + shift[0].y,
+        color,
         appearance,
         bright,
         friendly
@@ -260,25 +260,35 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
 
     this->Setup2dVertex(
         lineVerts[vertIndex + 2],
-        targetScreen.x + shift[0].x,
-        targetScreen.y + shift[0].y,
+        (nodePoints[lasti].x + (dir.x / 4.8)) + (shift[0].x / 2),
+        (nodePoints[lasti].y + (dir.y / 4.8)) + (shift[0].y / 2),
         color,
         appearance,
-        0,
+        bright,
         friendly
     );
 
     this->Setup2dVertex(
-        lineVerts[vertIndex+3],
-        targetScreen.x + shift[1].x,
-        targetScreen.y + shift[1].y,
+        lineVerts[vertIndex + 3],
+        (nodePoints[lasti].x + (dir.x / 4.8)) + (shift[1].x / 2),
+        (nodePoints[lasti].y + (dir.y / 4.8)) + (shift[1].y / 2),
         color,
         appearance,
-        0,
+        bright,
         friendly
     );
 
-    RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, lineVerts, 4 * (nodesCount));
+    this->Setup2dVertex(
+        lineVerts[vertIndex + 4],
+        (nodePoints[lasti].x + (dir.x / 4.5)),
+        (nodePoints[lasti].y + (dir.y / 4.5)),
+        color,
+        appearance,
+        bright,
+        friendly
+    );
+
+    RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, lineVerts, (4 * nodesCount)+1);
     //RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, targetVertices, 4);
 
     if (!FrontEndMenuManager.m_bDrawRadarOrMap
