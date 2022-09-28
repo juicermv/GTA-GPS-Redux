@@ -93,7 +93,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
                 break;
         }
     }
-    else clr = CRadar::GetRadarTraceColour(color, 1, friendly);
+    else clr = CRadar::GetRadarTraceColour(color, bright, friendly);
 
     if(color < 1 || color > 8)
         clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B, GPS_LINE_A);
@@ -129,10 +129,13 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
 
     unsigned int vertIndex = 0;
     for (short i = 0; i < (nodesCount - 1); i++) {
-        CVector2D point[4], shift[2];
-        CVector2D dir = nodePoints[i + 1] - nodePoints[i];
-        float angle = atan2(dir.y, dir.x);
+        CVector2D point[4], shift[3];
+        CVector2D dir = nodePoints[i + 1] - nodePoints[i]; // Direction between current node to next node
+        float angle = atan2(dir.y, dir.x); // Convert direction to angle
+        
         if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
+            // 1.5707963 radians = 90 degrees
+
             shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH;
             shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH;
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH;
@@ -150,13 +153,51 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
             shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
         }
-        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color, appearance, bright, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color, appearance, bright, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color, appearance, bright, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color, appearance, bright, friendly);
+
+        this->Setup2dVertex(                //
+            lineVerts[vertIndex + 0],       //
+            nodePoints[i].x + shift[0].x,   // CurrentNode*
+            nodePoints[i].y + shift[0].y,   //
+            color,
+            appearance, 
+            bright, 
+            friendly
+        );
+
+        this->Setup2dVertex(                //
+            lineVerts[vertIndex + 1],       //
+            nodePoints[i].x + shift[1].x,   // CurrentNode - CurrentNode*
+            nodePoints[i].y + shift[1].y,   //
+            color,
+            appearance,
+            bright,
+            friendly
+        );
+
+        this->Setup2dVertex(                    // NextNode*
+            lineVerts[vertIndex + 2],           //    |
+            nodePoints[i + 1].x + shift[0].x,   // CurrentNode - CurrentNode
+            nodePoints[i + 1].y + shift[0].y,   //
+            color, 
+            appearance, 
+            bright, 
+            friendly
+        );
+
+        this->Setup2dVertex(
+            lineVerts[vertIndex + 3],           // NextNode - NextNode*
+            nodePoints[i + 1].x + shift[1].x,   //    |             |
+            nodePoints[i + 1].y + shift[1].y,   // CurrentNode - CurrentNode
+            color,                              //
+            appearance, 
+            bright, 
+            friendly
+        );
+        
         vertIndex += 4;
     }
-
+    
+    
     RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, lineVerts, 4 * (nodesCount - 1));
 
     if (!FrontEndMenuManager.m_bDrawRadarOrMap
