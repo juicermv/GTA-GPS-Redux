@@ -42,9 +42,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='GTASA Release|Win32'">
-    <OutDir>$(ProjectDir)\GTASA\Release\</OutDir>
-    <IntDir>$(ProjectDir).obj\GTASA\Release\</IntDir>
-    <TargetName>SA.GPS.REDUX</TargetName>
+    <OutDir>$(ProjectDir)\SAMP\Release\</OutDir>
+    <IntDir>$(ProjectDir).obj\SAMP\Release\</IntDir>
+    <TargetName>SAMP.GPS.REDUX</TargetName>
     <TargetExt>.asi</TargetExt>
     <IncludePath>$(IncludePath);$(DIRECTX9_SDK_DIR)\Include\</IncludePath>
     <LibraryPath>$(LibraryPath);$(DIRECTX9_SDK_DIR)\Lib\x86\</LibraryPath>
