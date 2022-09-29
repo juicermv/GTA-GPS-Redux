@@ -440,8 +440,6 @@ void GPSLine::Run() {
     plugin::patch::SetUInt(0x4518F8, 50000);
     plugin::patch::SetUInt(0x4519B0, 49950);
 
-    if (GetModuleHandleA("SAMP.dll")) return; //don't run if SAMP
-
     /*
       Clears target blip when player reaches it.
     */
