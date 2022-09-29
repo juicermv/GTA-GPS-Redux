@@ -19,7 +19,7 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
         (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT), // Respect rules of traffic. (only if in valid vehicle)
         CNodeAddress(), 
         false, 
-        FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT // Whether to do water navigation
+        (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && ENABLE_WATER_GPS) // Whether to do water navigation
     );
 
     if (nodesCount > 0) {
@@ -89,7 +89,6 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
                     // Requires further testing.
                     clr = CC_RED;
                 }
-
                 break;
         }
     }
@@ -327,6 +326,7 @@ GPSLine::GPSLine() {
 
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on boats", ENABLE_WATER_GPS);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation for moving targets", ENABLE_MOVING);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", DISABLE_PROXIMITY);
 

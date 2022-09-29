@@ -29,6 +29,9 @@ Navigation line width = 2.5
 ; Self explanatory once again. true/false
 Enable navigation on bicycles = false
 
+; Self explanatory x3
+Enable navigation on boats = true
+
 ; GTA V does not provide GPS routes for moving
 ; targets like cars and peds. If you'd like to
 ; enable navigation for these objects set this to "true". true/false

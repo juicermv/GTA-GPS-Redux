@@ -62,6 +62,7 @@ private:
     static inline float GPSLine::DISABLE_PROXIMITY = -1;
     static inline bool GPSLine::ENABLE_BMX = -1;
     static inline bool GPSLine::ENABLE_MOVING = -1;
+    static inline bool GPSLine::ENABLE_WATER_GPS = -1;
     
     // Custom Colors config
     static inline bool GPSLine::ENABLE_CUSTOM_CLRS = -1;
