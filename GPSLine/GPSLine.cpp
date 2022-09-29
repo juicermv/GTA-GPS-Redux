@@ -16,19 +16,14 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
         999999.0f, 
         NULL,
         999999.0f, 
-        ( // Respect rules of traffic (only if in valid vehicle)
-            FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_AUTOMOBILE 
-            || FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_MTRUCK
-            || FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BIKE
-            || FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_QUAD
-        ), 
+        (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT), // Respect rules of traffic. (only if in valid vehicle)
         CNodeAddress(), 
         false, 
-        FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT
+        (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && ENABLE_WATER_GPS) // Whether to do water navigation
     );
 
     if (nodesCount > 0) {
-        for (short i = 0; i < nodesCount; i++) {
+        for (unsigned short i = 0; i < nodesCount; i++) {
             CVector nodePosn = ThePaths.GetPathNode(resultNodes[i])->GetNodeCoors();
             CVector2D tmpPoint;
             CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, CVector2D(nodePosn.x, nodePosn.y));
@@ -71,7 +66,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
                 clr = CC_PURPLE; break;
             case 6: // CYAN
                 clr = CC_CYAN; break;
-            case 7: // Depends on whether blip is friendly
+            case 7: // Depends on whether blip is friendly.
                 if (friendly) {
                     // BLUE
                     clr = CC_BLUE;
@@ -82,18 +77,22 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
                 }
                 break;
             case 8: // DESTINATION
-                if (appearance == BLIP_FLAG_THREAT) { // For some reason this is flipped?
+                if (appearance == BLIP_FLAG_FRIEND) {
                     // BLUE
                     clr = CC_BLUE;
                 }
-                else {
+                else if(appearance == BLIP_FLAG_THREAT) {
                     // YELLOW
                     clr = CC_YELLOW;
+                }
+                else {
+                    // Requires further testing.
+                    clr = CC_RED;
                 }
                 break;
         }
     }
-    else clr = CRadar::GetRadarTraceColour(color, 1, friendly);
+    else clr = CRadar::GetRadarTraceColour(color, bright, friendly);
 
     if(color < 1 || color > 8)
         clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B, GPS_LINE_A);
@@ -101,7 +100,7 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color,
     vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, clr.a);
 }
 
-void GPSLine::renderPath(short color, unsigned char appearance, unsigned char bright, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
+void GPSLine::renderPath(CVector tracePos, short color, unsigned char appearance, unsigned char bright, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
     if (nodesCount <= 0) {
         return;
     }
@@ -128,11 +127,17 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
     RwRenderStateSet(rwRENDERSTATETEXTURERASTER, NULL);
 
     unsigned int vertIndex = 0;
-    for (short i = 0; i < (nodesCount - 1); i++) {
-        CVector2D point[4], shift[2];
-        CVector2D dir = nodePoints[i + 1] - nodePoints[i];
-        float angle = atan2(dir.y, dir.x);
+    short lasti;
+    CVector2D shift[2];
+    for (unsigned short i = 0; i < (nodesCount - 1); i++) {
+        
+        // TODO: Move this (shift calculation) into a function.
+        CVector2D dir = nodePoints[i + 1] - nodePoints[i]; // Direction between current node to next node
+        float angle = atan2(dir.y, dir.x); // Convert direction to angle
+        
         if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
+            // 1.5707963 radians = 90 degrees
+
             shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH;
             shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH;
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH;
@@ -150,14 +155,142 @@ void GPSLine::renderPath(short color, unsigned char appearance, unsigned char br
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
             shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
         }
-        this->Setup2dVertex(lineVerts[vertIndex + 0], nodePoints[i].x + shift[0].x, nodePoints[i].y + shift[0].y, color, appearance, bright, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 1], nodePoints[i + 1].x + shift[0].x, nodePoints[i + 1].y + shift[0].y, color, appearance, bright, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 2], nodePoints[i].x + shift[1].x, nodePoints[i].y + shift[1].y, color, appearance, bright, friendly);
-        this->Setup2dVertex(lineVerts[vertIndex + 3], nodePoints[i + 1].x + shift[1].x, nodePoints[i + 1].y + shift[1].y, color, appearance, bright, friendly);
+
+        this->Setup2dVertex(                //
+            lineVerts[vertIndex + 0],       //
+            nodePoints[i].x + shift[0].x,   // CurrentNode*
+            nodePoints[i].y + shift[0].y,   //
+            color,
+            appearance, 
+            bright, 
+            friendly
+        );
+
+        this->Setup2dVertex(                //
+            lineVerts[vertIndex + 1],       //
+            nodePoints[i].x + shift[1].x,   // CurrentNode - CurrentNode*
+            nodePoints[i].y + shift[1].y,   //
+            color,
+            appearance,
+            bright,
+            friendly
+        );
+
+        this->Setup2dVertex(                    // NextNode*
+            lineVerts[vertIndex + 2],           //    |
+            nodePoints[i + 1].x + shift[0].x,   // CurrentNode - CurrentNode
+            nodePoints[i + 1].y + shift[0].y,   //
+            color, 
+            appearance, 
+            bright, 
+            friendly
+        );
+
+        this->Setup2dVertex(
+            lineVerts[vertIndex + 3],           // NextNode - NextNode*
+            nodePoints[i + 1].x + shift[1].x,   //    |             |
+            nodePoints[i + 1].y + shift[1].y,   // CurrentNode - CurrentNode
+            color,                              //
+            appearance, 
+            bright, 
+            friendly
+        );
+        
+        lasti = i+1;
         vertIndex += 4;
     }
+    
+    // Create end segment
+    CVector2D targetScreen;
+    CVector2D tmpPoint;
+    CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, tracePos);
+    if (!FrontEndMenuManager.m_bDrawRadarOrMap)
+        CRadar::TransformRadarPointToScreenSpace(targetScreen, tmpPoint);
+    else {
+        CRadar::LimitRadarPoint(tmpPoint);
+        CRadar::TransformRadarPointToScreenSpace(targetScreen, tmpPoint);
+        targetScreen.x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
+        targetScreen.y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
+        CRadar::LimitToMap(&targetScreen.x, &targetScreen.y);
+    }
 
-    RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, lineVerts, 4 * (nodesCount - 1));
+    CVector2D dir = targetScreen - nodePoints[lasti]; // Direction between last node and the target position
+    float angle = atan2(dir.y, dir.x); // Convert direction to angle
+
+    if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
+        // 1.5707963 radians = 90 degrees
+
+        shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH;
+        shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH;
+        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH;
+        shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH;
+    }
+    else {
+        float mp = FrontEndMenuManager.m_fMapZoom - 140.0f;
+        if (mp < 140.0f)
+            mp = 140.0f;
+        else if (mp > 960.0f)
+            mp = 960.0f;
+        mp = mp / 960.0f + 0.4f;
+        shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
+    }
+
+    this->Log("DIR: " + std::to_string(dir.x) + ", " + std::to_string(dir.y));
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex+0],
+        nodePoints[lasti].x + shift[0].x,
+        nodePoints[lasti].y + shift[0].y,
+        color,
+        appearance,
+        bright,
+        friendly
+    );
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex+1],
+        nodePoints[lasti].x + shift[1].x,
+        nodePoints[lasti].y + shift[1].y,
+        color,
+        appearance,
+        bright,
+        friendly
+    );
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex + 2],
+        (nodePoints[lasti].x + (dir.x / 4.8)) + (shift[0].x / 2),
+        (nodePoints[lasti].y + (dir.y / 4.8)) + (shift[0].y / 2),
+        color,
+        appearance,
+        bright,
+        friendly
+    );
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex + 3],
+        (nodePoints[lasti].x + (dir.x / 4.8)) + (shift[1].x / 2),
+        (nodePoints[lasti].y + (dir.y / 4.8)) + (shift[1].y / 2),
+        color,
+        appearance,
+        bright,
+        friendly
+    );
+
+    this->Setup2dVertex(
+        lineVerts[vertIndex + 4],
+        (nodePoints[lasti].x + (dir.x / 4.5)),
+        (nodePoints[lasti].y + (dir.y / 4.5)),
+        color,
+        appearance,
+        bright,
+        friendly
+    );
+
+    RwIm2DRenderPrimitive(rwPRIMTYPETRISTRIP, lineVerts, (4 * nodesCount)+1);
 
     if (!FrontEndMenuManager.m_bDrawRadarOrMap
         && reinterpret_cast<D3DCAPS9 const*>(RwD3D9GetCaps())->RasterCaps & D3DPRASTERCAPS_SCISSORTEST)
@@ -250,6 +383,7 @@ void GPSLine::Run() {
 
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on boats", ENABLE_WATER_GPS);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation for moving targets", ENABLE_MOVING);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", DISABLE_PROXIMITY);
 
@@ -289,11 +423,11 @@ void GPSLine::Run() {
 
     iniFile.close();
 
-    for (int i = 0; i < 1024; i++) {
+    for (short i = 0; i < 1024; i++) {
         pathNodesToStream[i] = 1;
     }
 
-    for (int i = 0; i < 50000; i++) {
+    for (unsigned short i = 0; i < 50000; i++) {
         pathNodes[i] = -1;
     }
 
@@ -352,7 +486,7 @@ void GPSLine::Run() {
             }
             this->targetRouteShown = false;
             this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, targetDistance);
-            this->renderPath(-1, 0, 1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
+            this->renderPath(destPosn, -1, 0, 1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
         }
 
         if (playa
@@ -448,16 +582,17 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
     case 0: // NONE???
         return;
     case 7: // Pickups
-        this->Log("Pickup detected. Not providing GPS navigation.");
+        this->Log("Pickup detected. Not providing GPS navigation!");
         return;
     default:
         destVec = trace.m_vecPos;
         break;
     }
 
+    this->Log("DestVec: " + std::to_string(destVec.x) + ", " + std::to_string(destVec.y));
     this->missionRouteShown = false;
     this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, missionDistance);
-    this->renderPath(trace.m_nColour, trace.m_bBright, trace.m_nCoordBlipAppearance, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
+    this->renderPath(destVec, trace.m_nColour, trace.m_bBright, trace.m_nCoordBlipAppearance, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
 }
 
 void GPSLine::Log(std::string val) {
@@ -479,7 +614,7 @@ void GPSLine::Log(std::string val) {
 
 const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
     std::string out;
-    for (int i = 0; i < (int)vec.size() - 1; i++) {
+    for (unsigned short i = 0; i < (unsigned short)vec.size() - 1; i++) {
         out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(FindPlayerCoors(0), vec.at(i).m_vecPos)) + "\n\t";
     }
     return out.c_str();
@@ -490,7 +625,7 @@ CRGBA GPSLine::ExtractColorFromString(std::string in) {
     in.erase(std::remove_if(in.begin(), in.end(), isspace), in.end());
 
     size_t pos = 0;
-    int 
+    unsigned char 
         R = 0, 
         G = 0,
         B = 0,
@@ -504,23 +639,23 @@ CRGBA GPSLine::ExtractColorFromString(std::string in) {
         didA = false
     ;
 
-    for (int i = 0; i < 4; i++) {
+    for (unsigned char i = 0; i < 4; i++) {
         pos = in.find(",");
 
         if (!didR) {
-            R = std::stoi(in.substr(0, pos));
+            R = (unsigned char)std::stoi(in.substr(0, pos));
             didR = true;
         }
         else if (!didG) {
-            G = std::stoi(in.substr(0, pos));
+            G = (unsigned char)std::stoi(in.substr(0, pos));
             didG = true;
         }
         else if (!didB) {
-            B = std::stoi(in.substr(0, pos));
+            B = (unsigned char)std::stoi(in.substr(0, pos));
             didB = true;
         }
         else if (!didA) {
-            A = std::stoi(in.substr(0, pos));
+            A = (unsigned char)std::stoi(in.substr(0, pos));
             didA = true;
         }
 
