@@ -311,11 +311,68 @@ bool GPSLine::CheckBMX() {
 }
 
 GPSLine::GPSLine() {
+    this->hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)GPSLine::init, (LPVOID)this, 0, (LPDWORD)NULL);
+}
+
+GPSLine::~GPSLine()
+{
+    if (this->hThread != NULL)
+        TerminateThread(this->hThread, 0);
+}
+
+LPVOID WINAPI GPSLine::init(LPVOID* lpParam) {
+    MODULEINFO miSampDll;
+    DWORD dwSampDllBaseAddr, dwSampDllEndAddr, dwCallAddr;
+
+    GPSLine* sender = (GPSLine*)lpParam;
+
+    stOpcodeRelCall* fnGameProc = (stOpcodeRelCall*)E_ADDR_GAMEPROCESS;
+
+    // Check if E_ADDR_GAMEPROCESS opcode is a relative call (0xE8)
+    while (fnGameProc->bOpcode != 0xE8)
+        Sleep(100);
+
+    while (true) {
+        Sleep(100);
+
+        // Get samp.dll module information to get base address and end address
+        if (!GetModuleInformation(GetCurrentProcess(), GetModuleHandle("samp.dll"), &miSampDll, sizeof(MODULEINFO))) {
+            continue;
+        }
+
+        // Some stupid calculation
+        dwSampDllBaseAddr = (DWORD)miSampDll.lpBaseOfDll;
+        dwSampDllEndAddr = dwSampDllBaseAddr + miSampDll.SizeOfImage;
+
+        // Calculate destination address by offset and relative call opcode size
+        dwCallAddr = fnGameProc->dwRelAddr + E_ADDR_GAMEPROCESS + 5;
+
+        // Check if dwCallAddr is a samp.dll's hook address, 
+        // to make sure this plugin hook (Events::gameProcessEvent) not replaced by samp.dll
+        if (dwCallAddr >= dwSampDllBaseAddr && dwCallAddr <= dwSampDllEndAddr)
+            break;
+    }
+
+    // Just wait a few secs for the game loaded fully to avoid any conflicts and crashes
+    // I don't know what the elegant way is :)
+    while (!FindPlayerPed(0))
+        Sleep(5000);
+
+    // Run the plugin
+    sender->Run();
+
+    // Reset the thread handle
+    sender->hThread = NULL;
+
+    return NULL;
+}
+
+void GPSLine::Run() {
     // Logging stuff
-    this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
+    this->logfile.open("SAMP.GPS.LOG.txt", std::ios::out);
 
     // Load config values from file.
-    iniFile.open("SA.GPS.CONF.ini", std::ios::in);
+    iniFile.open("SAMP.GPS.CONF.ini", std::ios::in);
     iniParser.parse(iniFile);
     this->Log("INI config loaded:");
     iniParser.generate(this->logfile);
