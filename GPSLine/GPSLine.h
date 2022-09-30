@@ -55,10 +55,10 @@ private:
     // Config values
     static const inline short GPSLine::MAX_NODE_POINTS = 5000;
     static inline float GPSLine::GPS_LINE_WIDTH = -1;
-    static inline unsigned char GPSLine::GPS_LINE_R = -1;
-    static inline unsigned char GPSLine::GPS_LINE_G = -1;
-    static inline unsigned char GPSLine::GPS_LINE_B = -1;
-    static inline unsigned char GPSLine::GPS_LINE_A = -1;
+    static inline short GPSLine::GPS_LINE_R = -1;
+    static inline short GPSLine::GPS_LINE_G = -1;
+    static inline short GPSLine::GPS_LINE_B = -1;
+    static inline short GPSLine::GPS_LINE_A = -1;
     static inline float GPSLine::DISABLE_PROXIMITY = -1;
     static inline bool GPSLine::ENABLE_BMX = -1;
     static inline bool GPSLine::ENABLE_MOVING = -1;
@@ -109,12 +109,12 @@ private:
 
     CRGBA GPSLine::ExtractColorFromString(std::string in);
 
-    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, unsigned char appearance, unsigned char bright, bool friendly);
+    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, bool friendly);
 
     // Self explanatory.
     void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
 
-    void GPSLine::renderPath(CVector tracePos, short color, unsigned char appearance, unsigned char bright, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
+    void GPSLine::renderPath(CVector tracePos, short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
 
     void GPSLine::renderMissionTrace(tRadarTrace trace);
 
