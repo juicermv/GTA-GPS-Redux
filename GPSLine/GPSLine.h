@@ -46,8 +46,32 @@
     #define MAX_TARGET_DISTANCE 10.0f
 */
 
+#ifdef SAMP
+
+#include <Windows.h>
+#include <Psapi.h>
+
+#pragma comment( lib, "psapi.lib" )
+#pragma comment( lib, "kernel32.lib" )
+
+
+#define E_ADDR_GAMEPROCESS	0x53E981
+
+#pragma pack(push, 1)
+typedef struct stOpcodeRelCall
+{
+    BYTE bOpcode;
+    DWORD dwRelAddr;
+} OpcodeRelCall;
+#pragma pack(pop)
+#endif
+
 class GPSLine {
 private:
+#ifdef SAMP
+    HANDLE GPSLine::hThread = NULL;
+#endif
+
     // Ini Config stuff
     inipp::Ini<char> iniParser;
     std::ifstream iniFile;
@@ -103,13 +127,23 @@ private:
     char GPSLine::pathNodesToStream[1024];
     int GPSLine::pathNodes[50000];
 
+    CVector GPSLine::PrevPos;
+
+#ifdef SAMP
+    static LPVOID WINAPI GPSLine::init(LPVOID* lpParam);
+#endif
+
+    void GPSLine::Run();
+
     bool GPSLine::CheckBMX();
 
     const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
 
     CRGBA GPSLine::ExtractColorFromString(std::string in);
 
-    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, short color, bool friendly);
+    CRGBA GPSLine::SetupColor(short color, bool friendly);
+
+    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr);
 
     // Self explanatory.
     void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
@@ -119,7 +153,6 @@ private:
     void GPSLine::renderMissionTrace(tRadarTrace trace);
 
 public:
-
     GPSLine();
-
-} gPSLine;
+    ~GPSLine();
+} GPSLineRedux;
