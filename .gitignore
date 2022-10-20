@@ -37,3 +37,6 @@
 
 # Clangd project configuration file
 .clangd
+
+# Plugin file
+*.asi
