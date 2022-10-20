@@ -3,7 +3,7 @@
 void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance) {
     destPosn.z = CWorld::FindGroundZForCoord(destPosn.x, destPosn.y);
 
-    if (DistanceBetweenPoints(PrevPos, FindPlayerCoors(0)) >= 20.0f) {
+    if (DistanceBetweenPoints(PrevPos, FindPlayerCoors(0)) >= 20.0f || (this->PrevDest.Magnitude() - destPosn.Magnitude()) != 0) {
         ThePaths.DoPathSearch
         (
             0,
@@ -23,6 +23,7 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
             (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && ENABLE_WATER_GPS) // Whether to do water navigation
         );
         this->PrevPos = FindPlayerCoors(0);
+        this->PrevDest = destPosn;
     }
 
     if (nodesCount > 0) {
@@ -285,7 +286,6 @@ bool GPSLine::CheckBMX() {
     return FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BMX;
 }
 
-
 void GPSLine::Run() {
     // Logging stuff
     this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
@@ -419,7 +419,7 @@ void GPSLine::Run() {
 
                 tRadarTrace trace = CRadar::ms_RadarTrace[i];
 
-                if 
+                if
                 (
                     trace.m_nRadarSprite == 0 
                     && trace.m_nBlipDisplay > 1 

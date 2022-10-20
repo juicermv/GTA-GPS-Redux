@@ -128,6 +128,7 @@ private:
     int GPSLine::pathNodes[50000];
 
     CVector GPSLine::PrevPos;
+    CVector GPSLine::PrevDest;
 
 #ifdef SAMP
     static LPVOID WINAPI GPSLine::init(LPVOID* lpParam);
