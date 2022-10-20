@@ -8,6 +8,11 @@ If you'd like to contribute, go ahead.
 
 ---
 
+## Re-Upload Policy
+If you'd like to distribute this mod, please ask for my (juicermv) permission first. 
+If you downloaded this mod from anywhere other than https://github.com/juicermv/GTA-GPS-Redux,
+make sure the source you downloaded this mod from can be trusted and is approved by me. If you're concered about people reuploading this mod without permission, you may reach me at the page listed above.
+
 ## Installation
 
 1. Via modloader
