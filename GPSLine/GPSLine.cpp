@@ -1,13 +1,26 @@
 #include "GPSLine.h"
 
-void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance) {
+void GPSLine::UpdatePlayerPos()
+{
+    this->PlayerPos = FindPlayerCoors(0);
+}
+
+void GPSLine::calculatePath(
+    CVector destPosn, 
+    short& nodesCount, 
+    CNodeAddress* resultNodes,
+    CVector2D* nodePoints, 
+    float* nodeHeights,
+    float& gpsDistance
+)
+{
     destPosn.z = CWorld::FindGroundZForCoord(destPosn.x, destPosn.y);
 
-    if (DistanceBetweenPoints(PrevPos, FindPlayerCoors(0)) >= 20.0f || (this->PrevDest.Magnitude() - destPosn.Magnitude()) != 0) {
+    if (DistanceBetweenPoints(PrevPos, this->PlayerPos) >= 20.0f || (this->PrevDest.Magnitude() - destPosn.Magnitude()) != 0) {
         ThePaths.DoPathSearch
         (
             0,
-            FindPlayerCoors(0),
+            this->PlayerPos,
             CNodeAddress(),
             destPosn,
             resultNodes,
@@ -19,32 +32,37 @@ void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* r
             999999.0f,
             (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT), // Respect rules of traffic. (only if in valid vehicle)
             CNodeAddress(),
-            false,
+            true,
             (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && ENABLE_WATER_GPS) // Whether to do water navigation
         );
-        this->PrevPos = FindPlayerCoors(0);
+        nodePoints[0] = CVector2D(this->PlayerPos);
+        this->PrevPos = this->PlayerPos;
         this->PrevDest = destPosn;
     }
 
-    if (nodesCount > 0) {
-        for (unsigned short i = 0; i < nodesCount; i++) {
-            CVector nodePosn = ThePaths.GetPathNode(resultNodes[i])->GetNodeCoors();
-            CVector2D tmpPoint;
-            CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, CVector2D(nodePosn.x, nodePosn.y));
-            if (!FrontEndMenuManager.m_bDrawRadarOrMap)
-                CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
-            else {
-                CRadar::LimitRadarPoint(tmpPoint);
-                CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
-                nodePoints[i].x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
-                nodePoints[i].y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
-                CRadar::LimitToMap(&nodePoints[i].x, &nodePoints[i].y);
-            }
+    for (unsigned short i = 0; i < nodesCount; i++) {
+        // TODO you can extract width from this as well
+        CPathNode *currentNode = ThePaths.GetPathNode(resultNodes[i]);
+        CVector nodePosn = currentNode->GetNodeCoors();
+
+
+        nodeHeights[i] = 20 / CWorld::FindGroundZForCoord(nodePosn.x, nodePosn.y);
+
+        CVector2D tmpPoint;
+        CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, CVector2D(nodePosn.x, nodePosn.y));
+        if (!FrontEndMenuManager.m_bDrawRadarOrMap)
+            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
+        else {
+            CRadar::LimitRadarPoint(tmpPoint);
+            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
+            nodePoints[i].x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
+            nodePoints[i].y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
+            CRadar::LimitToMap(&nodePoints[i].x, &nodePoints[i].y);
         }
     }
 }
 
-CRGBA GPSLine::SetupColor(short color, bool friendly) {
+CRGBA GPSLine::SetupColor(short color, bool friendly, float height) {
     CRGBA clr;
 
     if (ENABLE_CUSTOM_CLRS)
@@ -83,7 +101,13 @@ CRGBA GPSLine::SetupColor(short color, bool friendly) {
     else clr = CRadar::GetRadarTraceColour(color, 1, friendly);
 
     if (color < 1 || color > 8)
+    {
         clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B, GPS_LINE_A);
+    }
+
+    clr.r = std::clamp(clr.r + height, 0.0f, 255.0f);
+    clr.g = std::clamp(clr.g + height, 0.0f, 255.0f);
+    clr.b = std::clamp(clr.b + height, 0.0f, 255.0f);
 
     return clr;
 }
@@ -98,7 +122,19 @@ void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr) {
     vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, clr.a);
 }
 
-void GPSLine::renderPath(CVector tracePos, short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts) {
+void GPSLine::renderPath(
+    CVector tracePos, 
+    short color, 
+    bool friendly, 
+    short& nodesCount, 
+    bool& gpsShown, 
+    CNodeAddress* resultNodes, 
+    CVector2D* nodePoints, 
+    float* nodeHeights,
+    float& gpsDistance,
+    RwIm2DVertex* lineVerts
+)
+{
     if (nodesCount <= 0) {
         return;
     }
@@ -123,21 +159,21 @@ void GPSLine::renderPath(CVector tracePos, short color, bool friendly, short& no
     }
 
     RwRenderStateSet(rwRENDERSTATETEXTURERASTER, NULL);
-
-    CRGBA vColor = this->SetupColor(color, friendly);
+    
+    CRGBA vColor = this->SetupColor(color, friendly, false);
 
     unsigned int vertIndex = 0;
     short lasti;
     CVector2D shift[2];
     for (unsigned short i = 0; i < (nodesCount - 1); i++) {
+        vColor = this->SetupColor(color, friendly, nodeHeights[i]);
         
         // TODO: Move this (shift calculation) into a function.
         CVector2D dir = nodePoints[i + 1] - nodePoints[i]; // Direction between current node to next node
         float angle = atan2(dir.y, dir.x); // Convert direction to angle
-        
+
         if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
             // 1.5707963 radians = 90 degrees
-
             shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH;
             shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH;
             shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH;
@@ -222,8 +258,8 @@ void GPSLine::renderPath(CVector tracePos, short color, bool friendly, short& no
         mp = mp / 960.0f + 0.4f;
         shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
         shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
-        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
         shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
     }
 
     this->Log("DIR: " + std::to_string(dir.x) + ", " + std::to_string(dir.y));
@@ -274,7 +310,7 @@ void GPSLine::renderPath(CVector tracePos, short color, bool friendly, short& no
         GetD3DDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
     }
 
-    gpsDistance += DistanceBetweenPoints(FindPlayerCoors(0), ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
+    gpsDistance += DistanceBetweenPoints(this->PlayerPos, ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
     gpsShown = true;
 }
 
@@ -364,11 +400,13 @@ void GPSLine::Run() {
     */
 
     plugin::Events::gameProcessEvent += [this]() {
+        this->UpdatePlayerPos();
+
         if (FrontEndMenuManager.m_nTargetBlipIndex
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
             && FindPlayerPed(0)
-            && DistanceBetweenPoints(CVector2D(FindPlayerCoors(0)),
+            && DistanceBetweenPoints(CVector2D(this->PlayerPos),
                 CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= DISABLE_PROXIMITY)
         {
             this->once = false;
@@ -396,8 +434,8 @@ void GPSLine::Run() {
                 this->once = true;
             }
             this->targetRouteShown = false;
-            this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, targetDistance);
-            this->renderPath(destPosn, -1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, targetDistance, t_LineVerts);
+            this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance);
+            this->renderPath(destPosn, -1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance, t_LineVerts);
         }
 
         if (playa
@@ -423,7 +461,7 @@ void GPSLine::Run() {
                 (
                     trace.m_nRadarSprite == 0 
                     && trace.m_nBlipDisplay > 1 
-                    && DistanceBetweenPoints(FindPlayerCoors(0), trace.m_vecPos) > DISABLE_PROXIMITY
+                    && DistanceBetweenPoints(this->PlayerPos, trace.m_vecPos) > DISABLE_PROXIMITY
                 ) 
                 {
                     this->Log("Found contender.");
@@ -436,7 +474,7 @@ void GPSLine::Run() {
                         (
                             DistanceBetweenPoints
                             (
-                                FindPlayerCoors(0), 
+                                this->PlayerPos, 
                                 trace.m_vecPos
                             )
                         );
@@ -566,8 +604,8 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
 
     this->Log("DestVec: " + std::to_string(destVec.x) + ", " + std::to_string(destVec.y));
     this->missionRouteShown = false;
-    this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, missionDistance);
-    this->renderPath(destVec, trace.m_nColour, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, missionDistance, m_LineVerts);
+    this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, m_NodeHeights, missionDistance);
+    this->renderPath(destVec, trace.m_nColour, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, m_NodeHeights, missionDistance, m_LineVerts);
 }
 
 void GPSLine::Log(std::string val) {
@@ -590,7 +628,7 @@ void GPSLine::Log(std::string val) {
 const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
     std::string out;
     for (unsigned short i = 0; i < (unsigned short)vec.size() - 1; i++) {
-        out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(FindPlayerCoors(0), vec.at(i).m_vecPos)) + "\n\t";
+        out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(this->PlayerPos, vec.at(i).m_vecPos)) + "\n\t";
     }
     return out.c_str();
 }

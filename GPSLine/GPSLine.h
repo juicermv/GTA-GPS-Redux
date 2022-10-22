@@ -46,6 +46,8 @@
     #define MAX_TARGET_DISTANCE 10.0f
 */
 
+#define MAX_NODE_POINTS 5000
+
 #ifdef SAMP
 
 #include <Windows.h>
@@ -77,7 +79,6 @@ private:
     std::ifstream iniFile;
 
     // Config values
-    static const inline short GPSLine::MAX_NODE_POINTS = 5000;
     static inline float GPSLine::GPS_LINE_WIDTH = -1;
     static inline short GPSLine::GPS_LINE_R = -1;
     static inline short GPSLine::GPS_LINE_G = -1;
@@ -113,6 +114,7 @@ private:
 
     CNodeAddress GPSLine::t_ResultNodes[MAX_NODE_POINTS];
     CVector2D GPSLine::t_NodePoints[MAX_NODE_POINTS];
+    float GPSLine::t_NodeHeights[MAX_NODE_POINTS];
     RwIm2DVertex GPSLine::t_LineVerts[MAX_NODE_POINTS * 4];
 
     // These will be used for mission objectives
@@ -122,6 +124,7 @@ private:
 
     CNodeAddress GPSLine::m_ResultNodes[MAX_NODE_POINTS];
     CVector2D GPSLine::m_NodePoints[MAX_NODE_POINTS];
+    float GPSLine::m_NodeHeights[MAX_NODE_POINTS];
     RwIm2DVertex GPSLine::m_LineVerts[MAX_NODE_POINTS * 4];
 
     char GPSLine::pathNodesToStream[1024];
@@ -129,6 +132,9 @@ private:
 
     CVector GPSLine::PrevPos;
     CVector GPSLine::PrevDest;
+
+    CVector GPSLine::PlayerPos;
+    void GPSLine::UpdatePlayerPos();
 
 #ifdef SAMP
     static LPVOID WINAPI GPSLine::init(LPVOID* lpParam);
@@ -142,14 +148,32 @@ private:
 
     CRGBA GPSLine::ExtractColorFromString(std::string in);
 
-    CRGBA GPSLine::SetupColor(short color, bool friendly);
+    CRGBA GPSLine::SetupColor(short color, bool friendly, float height);
 
     void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr);
 
     // Self explanatory.
-    void GPSLine::calculatePath(CVector destPosn, short& nodesCount, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance);
+    void GPSLine::calculatePath(
+        CVector destPosn,
+        short& nodesCount,
+        CNodeAddress* resultNodes,
+        CVector2D* nodePoints,
+        float* nodeHeights,
+        float& gpsDistance
+    );
 
-    void GPSLine::renderPath(CVector tracePos, short color, bool friendly, short& nodesCount, bool& gpsShown, CNodeAddress* resultNodes, CVector2D* nodePoints, float& gpsDistance, RwIm2DVertex* lineVerts);
+    void GPSLine::renderPath(
+        CVector tracePos, 
+        short color, 
+        bool friendly, 
+        short& nodesCount, 
+        bool& gpsShown, 
+        CNodeAddress* resultNodes, 
+        CVector2D* nodePoints, 
+        float* NodeHeights,
+        float& gpsDistance, 
+        RwIm2DVertex* lineVerts
+    );
 
     void GPSLine::renderMissionTrace(tRadarTrace trace);
 
