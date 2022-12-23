@@ -117,6 +117,9 @@ private:
     static LPVOID WINAPI GPSLine::init(LPVOID* lpParam);
 #endif
 
+    void GPSLine::DrawRadarOverlayHandle();
+    void GPSLine::GameEventHandle();
+
     void GPSLine::Run();
 
     bool GPSLine::CheckBMX();

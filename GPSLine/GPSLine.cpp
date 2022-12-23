@@ -322,6 +322,8 @@ bool GPSLine::CheckBMX() {
     return FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BMX;
 }
 
+
+
 void GPSLine::Run() {
     // Logging stuff
     this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
@@ -352,107 +354,9 @@ void GPSLine::Run() {
       Clears target blip when player reaches it.
     */
 
-    plugin::Events::gameProcessEvent += [this]() {
-        this->UpdatePlayerPos();
+    plugin::Events::gameProcessEvent += [this]() { this->GameEventHandle(); };
 
-        if (FrontEndMenuManager.m_nTargetBlipIndex
-            && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
-            && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
-            && FindPlayerPed(0)
-            && DistanceBetweenPoints(CVector2D(this->PlayerPos),
-                CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= cfg.DISABLE_PROXIMITY)
-        {
-            this->once = false;
-            CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
-            FrontEndMenuManager.m_nTargetBlipIndex = 0;
-        }
-    };
-
-    plugin::Events::drawRadarOverlayEvent += [this]() {
-        CPed* playa = FindPlayerPed(0);
-        if (playa
-            && playa->m_pVehicle
-            && playa->m_nPedFlags.bInVehicle
-            && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
-            && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
-            && playa->m_nStatus != STATUS_REMOTE_CONTROLLED
-            && !CheckBMX()
-            && FrontEndMenuManager.m_nTargetBlipIndex
-            && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
-            && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
-        {
-            CVector destPosn = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
-            if (!this->once) {
-                this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z));
-                this->once = true;
-            }
-            this->targetRouteShown = false;
-            this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance);
-            this->renderPath(destPosn, -1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance, t_LineVerts);
-        }
-
-        if (playa
-            && playa->m_pVehicle
-            && playa->m_nPedFlags.bInVehicle
-            && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
-            && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
-            && !CTheScripts::bMiniGameInProgress
-            && !CheckBMX()
-            && CTheScripts::IsPlayerOnAMission())
-        {
-            std::vector<tRadarTrace> traces;    // Couldn't use std::map due to some error in
-            std::vector<float> trace_distances; // xstddef.
-
-            this->Log("Looking for mission objective blip.");
-
-            for (int i = 0; i < 174; i++) 
-            {
-
-                tRadarTrace trace = CRadar::ms_RadarTrace[i];
-
-                if
-                (
-                    trace.m_nRadarSprite == 0 
-                    && trace.m_nBlipDisplay > 1 
-                    && DistanceBetweenPoints(this->PlayerPos, trace.m_vecPos) > cfg.DISABLE_PROXIMITY
-                ) 
-                {
-                    this->Log("Found contender.");
-                    traces.push_back(trace);
-
-                    if (trace.m_nColour == 8)
-                        trace_distances.push_back(FLT_MAX); // Prioritize destination markers.
-                    else
-                        trace_distances.push_back
-                        (
-                            DistanceBetweenPoints
-                            (
-                                this->PlayerPos, 
-                                trace.m_vecPos
-                            )
-                        );
-                }
-
-            }
-
-            if (traces.size() > 0) {
-                this->Log(this->VectorToString(traces));
-                this->renderMissionTrace(
-                    traces
-                    [
-                        std::distance
-                        (
-                            trace_distances.begin(),
-                            std::max_element
-                            (
-                                trace_distances.begin(), trace_distances.end()
-                            )
-                        )
-                    ]
-                );
-            }
-        }
-    };
+    plugin::Events::drawRadarOverlayEvent += [this]() { this->DrawRadarOverlayHandle(); };
 }
 
 #ifdef SAMP
@@ -584,4 +488,106 @@ const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
         out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(this->PlayerPos, vec.at(i).m_vecPos)) + "\n\t";
     }
     return out.c_str();
+}
+
+void GPSLine::DrawRadarOverlayHandle() {
+    CPed* playa = FindPlayerPed(0);
+    if (playa
+        && playa->m_pVehicle
+        && playa->m_nPedFlags.bInVehicle
+        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
+        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
+        && playa->m_nStatus != STATUS_REMOTE_CONTROLLED
+        && !CheckBMX()
+        && FrontEndMenuManager.m_nTargetBlipIndex
+        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
+        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
+    {
+        CVector destPosn = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
+        if (!this->once) {
+            this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z));
+            this->once = true;
+        }
+        this->targetRouteShown = false;
+        this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance);
+        this->renderPath(destPosn, -1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance, t_LineVerts);
+    }
+
+    if (playa
+        && playa->m_pVehicle
+        && playa->m_nPedFlags.bInVehicle
+        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
+        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
+        && !CTheScripts::bMiniGameInProgress
+        && !CheckBMX()
+        && CTheScripts::IsPlayerOnAMission())
+    {
+        std::vector<tRadarTrace> traces;    // Couldn't use std::map due to some error in
+        std::vector<float> trace_distances; // xstddef.
+
+        this->Log("Looking for mission objective blip.");
+
+        for (int i = 0; i < 174; i++)
+        {
+
+            tRadarTrace trace = CRadar::ms_RadarTrace[i];
+
+            if
+                (
+                    trace.m_nRadarSprite == 0
+                    && trace.m_nBlipDisplay > 1
+                    && DistanceBetweenPoints(this->PlayerPos, trace.m_vecPos) > cfg.DISABLE_PROXIMITY
+                    )
+            {
+                this->Log("Found contender.");
+                traces.push_back(trace);
+
+                if (trace.m_nColour == 8)
+                    trace_distances.push_back(FLT_MAX); // Prioritize destination markers.
+                else
+                    trace_distances.push_back
+                    (
+                        DistanceBetweenPoints
+                        (
+                            this->PlayerPos,
+                            trace.m_vecPos
+                        )
+                    );
+            }
+
+        }
+
+        if (traces.size() > 0) {
+            this->Log(this->VectorToString(traces));
+            this->renderMissionTrace(
+                traces
+                [
+                    std::distance
+                    (
+                        trace_distances.begin(),
+                        std::max_element
+                        (
+                            trace_distances.begin(), trace_distances.end()
+                        )
+                    )
+                ]
+            );
+        }
+    }
+}
+
+void GPSLine::GameEventHandle() {
+    this->UpdatePlayerPos();
+
+    if (FrontEndMenuManager.m_nTargetBlipIndex
+        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
+        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
+        && FindPlayerPed(0)
+        && DistanceBetweenPoints(CVector2D(this->PlayerPos),
+            CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= cfg.DISABLE_PROXIMITY)
+    {
+        this->once = false;
+        CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
+        FrontEndMenuManager.m_nTargetBlipIndex = 0;
+    }
 }

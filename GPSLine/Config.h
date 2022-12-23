@@ -55,6 +55,9 @@ struct Config {
     bool ENABLE_MOVING = -1;
     bool ENABLE_WATER_GPS = -1;
 
+    bool ENABLE_DISTANCE_TEXT = -1;
+    short DISTANCE_UNITS = -1;
+
     // Custom Colors config
     bool ENABLE_CUSTOM_CLRS = -1;
     CRGBA
@@ -85,6 +88,8 @@ void Config::LoadConfig(const char* filename, Config &config) {
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on boats", config.ENABLE_WATER_GPS);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation for moving targets", config.ENABLE_MOVING);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", config.DISABLE_PROXIMITY);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Enable distance display", config.ENABLE_DISTANCE_TEXT);
+    inipp::get_value(iniParser.sections["Navigation Config"], "Units", config.DISTANCE_UNITS);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", config.GPS_LINE_R);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", config.GPS_LINE_G);
@@ -92,6 +97,8 @@ void Config::LoadConfig(const char* filename, Config &config) {
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line opacity", config.GPS_LINE_A);
 
     inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", config.ENABLE_CUSTOM_CLRS);
+
+    inipp::get_value(iniParser.sections["Misc"], "Enable Logfile", config.LOGFILE_ENABLED);
 
     if (config.ENABLE_CUSTOM_CLRS) {
         std::string buffer;
