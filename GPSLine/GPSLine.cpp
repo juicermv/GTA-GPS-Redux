@@ -104,6 +104,9 @@ CRGBA GPSLine::SetupColor(short color, bool friendly, float height) {
     {
         clr = CRGBA(cfg.GPS_LINE_R, cfg.GPS_LINE_G, cfg.GPS_LINE_B, cfg.GPS_LINE_A);
     }
+    else {
+        this->CurrentColor = clr;
+    }
 
     clr.r = std::clamp(clr.r + height, 0.0f, 255.0f);
     clr.g = std::clamp(clr.g + height, 0.0f, 255.0f);
@@ -326,7 +329,8 @@ bool GPSLine::CheckBMX() {
 
 void GPSLine::Run() {
     // Logging stuff
-    this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
+    if(cfg.LOGFILE_ENABLED)
+        this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
 
     // Load config values from file.
     Config::LoadConfig("SA.GPS.CONF.ini", this->cfg);
@@ -350,13 +354,11 @@ void GPSLine::Run() {
     plugin::patch::SetUInt(0x4518F8, 50000);
     plugin::patch::SetUInt(0x4519B0, 49950);
 
-    /*
-      Clears target blip when player reaches it.
-    */
-
     plugin::Events::gameProcessEvent += [this]() { this->GameEventHandle(); };
 
     plugin::Events::drawRadarOverlayEvent += [this]() { this->DrawRadarOverlayHandle(); };
+
+    plugin::Events::drawHudEvent += [this]() { this->DrawHudEventHandle(); };
 }
 
 #ifdef SAMP
@@ -420,11 +422,13 @@ GPSLine::GPSLine() {
 
 
 GPSLine::~GPSLine() {
-this->logfile.close();
-#ifdef SAMP
-    if (this->hThread != NULL)
-        TerminateThread(this->hThread, 0);
-#endif
+    if(cfg.LOGFILE_ENABLED)
+        this->logfile.close();
+
+    #ifdef SAMP
+        if (this->hThread != NULL)
+            TerminateThread(this->hThread, 0);
+    #endif
 }
 
 void GPSLine::renderMissionTrace(tRadarTrace trace) {
@@ -466,6 +470,9 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
 }
 
 void GPSLine::Log(std::string val) {
+    if (!cfg.LOGFILE_ENABLED)
+        return;
+
     if (this->logLines < 2048) {
         time_t timenow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         char stime[128];
@@ -577,6 +584,9 @@ void GPSLine::DrawRadarOverlayHandle() {
 }
 
 void GPSLine::GameEventHandle() {
+    /*
+        Clears target blip when player reaches it.
+    */
     this->UpdatePlayerPos();
 
     if (FrontEndMenuManager.m_nTargetBlipIndex
@@ -590,4 +600,69 @@ void GPSLine::GameEventHandle() {
         CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
         FrontEndMenuManager.m_nTargetBlipIndex = 0;
     }
+}
+
+// Kilometers to Miles.
+float KMtoM(float km) {
+    return km / 1.609f;
+}
+
+// Meters to feet.
+float mtof(float m) {
+    return m * 3.281;
+}
+
+std::string makeDist(float dist, short units) {
+    if (dist >= 1000.0f) {
+        dist /= 1000.0f;
+        return units == 1 ? std::to_string(dist) + "KM" : std::to_string(KMtoM(dist)) + "M";
+    }
+
+    return units == 1 ? std::to_string(dist) + "m" : std::to_string(mtof(dist)) + "f";
+}
+
+void GPSLine::DrawHudEventHandle() {
+    if (!cfg.ENABLE_DISTANCE_TEXT)
+        return;
+
+    if (CTheScripts::IsPlayerOnAMission()) {
+        CFont::SetOrientation(ALIGN_CENTER);
+        CFont::SetColor(this->CurrentColor);
+        CFont::SetBackground(false, false);
+        CFont::SetWrapx(500.0f);
+        CFont::SetScale(0.4f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
+            0.8f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
+        CFont::SetFontStyle(FONT_MENU);
+        CFont::SetProportional(true);
+        CFont::SetDropShadowPosition(1);
+        CFont::SetDropColor(CRGBA(0, 0, 0, 180));
+
+        CVector2D point;
+        CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, -1.0f));
+        CFont::PrintString(point.x, point.y + 8.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f, (char *)makeDist(this->missionDistance, cfg.DISTANCE_UNITS).c_str());
+    }
+
+    if (!targetRouteShown)
+        return;
+
+    CFont::SetOrientation(ALIGN_CENTER);
+    CFont::SetColor(CRGBA(
+        (unsigned char)cfg.GPS_LINE_R,
+        (unsigned char)cfg.GPS_LINE_G,
+        (unsigned char)cfg.GPS_LINE_B,
+        (unsigned char)cfg.GPS_LINE_A
+    ));
+
+    CFont::SetBackground(false, false);
+    CFont::SetWrapx(500.0f);
+    CFont::SetScale(0.4f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
+        0.8f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
+    CFont::SetFontStyle(FONT_MENU);
+    CFont::SetProportional(true);
+    CFont::SetDropShadowPosition(1);
+    CFont::SetDropColor(CRGBA(0, 0, 0, 180));
+
+    CVector2D point;
+    CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, -1.0f));
+    CFont::PrintString(point.x, -(point.y + 8.0f) * static_cast<float>(RsGlobal.maximumHeight) / 448.0f, (char*)makeDist(this->targetDistance, cfg.DISTANCE_UNITS).c_str());
 }

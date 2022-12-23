@@ -113,12 +113,15 @@ private:
     CVector GPSLine::PlayerPos;
     void GPSLine::UpdatePlayerPos();
 
+    CRGBA CurrentColor;
+
 #ifdef SAMP
     static LPVOID WINAPI GPSLine::init(LPVOID* lpParam);
 #endif
 
     void GPSLine::DrawRadarOverlayHandle();
     void GPSLine::GameEventHandle();
+    void GPSLine::DrawHudEventHandle();
 
     void GPSLine::Run();
 
