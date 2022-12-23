@@ -28,6 +28,9 @@ make sure the source you downloaded this mod from can be trusted and is approved
 ; This applies to all GPS routes
 [Navigation Config]
 
+; Whether to respect the direction of traffic when calculating the navigation route. true/false
+Respect direction of traffic = true
+
 ; Self explanatory. Can be any positive value.
 Navigation line width = 2.5
 
@@ -47,6 +50,12 @@ Enable navigation for moving targets = false
 ; removes waypoint. 
 Navigation line removal proximity = 25.0
 
+[Extras]
+; A display that shows you how far you are from your target. true/false
+Enable distance display = false
+
+; Units in which the distance is shown. 0 = Kilometers/Meters, 1 = Miles/Yards
+Units = 0
 
 ; These settings are specific to the GPS
 ; route following your waypoint (the manual
@@ -92,6 +101,10 @@ Yellow = 255, 255, 0
 ; These two aren't really used either.
 Purple = 255, 0, 255, 255
 Cyan = 0, 255, 255, 255
+
+; Do not touch this unless you know what you're doing.
+[Misc]
+Enable logfile = false
 ```
 ---
 ### This mod uses the following libraries:
