@@ -55,6 +55,8 @@ struct Config {
     bool ENABLE_MOVING = -1;
     bool ENABLE_WATER_GPS = -1;
 
+    bool RESPECT_LANE_DIRECTION = -1;
+
     bool ENABLE_DISTANCE_TEXT = -1;
     short DISTANCE_UNITS = -1;
 
@@ -83,13 +85,15 @@ void Config::LoadConfig(const char* filename, Config &config) {
     iniParser.strip_trailing_comments();
     iniParser.interpolate();
 
+    inipp::get_value(iniParser.sections["Navigation Config"], "Respect direction of traffic", config.RESPECT_LANE_DIRECTION);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", config.GPS_LINE_WIDTH);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", config.ENABLE_BMX);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on boats", config.ENABLE_WATER_GPS);
     inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation for moving targets", config.ENABLE_MOVING);
     inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", config.DISABLE_PROXIMITY);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Enable distance display", config.ENABLE_DISTANCE_TEXT);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Units", config.DISTANCE_UNITS);
+    
+    inipp::get_value(iniParser.sections["Extras"], "Enable distance display", config.ENABLE_DISTANCE_TEXT);
+    inipp::get_value(iniParser.sections["Extras"], "Units", config.DISTANCE_UNITS);
 
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", config.GPS_LINE_R);
     inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", config.GPS_LINE_G);

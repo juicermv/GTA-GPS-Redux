@@ -30,7 +30,11 @@ void GPSLine::calculatePath(
             999999.0f,
             NULL,
             999999.0f,
-            (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT), // Respect rules of traffic. (only if in valid vehicle)
+            (
+                FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT
+                && FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Respect rules of traffic. (only if in valid vehicle & enabled in config)
+                && cfg.RESPECT_LANE_DIRECTION
+            ), 
             CNodeAddress(),
             true,
             (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && cfg.ENABLE_WATER_GPS) // Whether to do water navigation
