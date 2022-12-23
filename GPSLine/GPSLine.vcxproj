@@ -108,6 +108,7 @@
     <ClCompile Include="GPSLine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Config.h" />
     <ClInclude Include="GPSLine.h" />
     <ClInclude Include="inipp.h" />
   </ItemGroup>

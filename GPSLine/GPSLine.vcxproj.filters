@@ -6,5 +6,10 @@
   <ItemGroup>
     <ClInclude Include="GPSLine.h" />
     <ClInclude Include="inipp.h" />
+    <ClInclude Include="Config.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+    <None Include="SA.GPS.CONF.ini" />
   </ItemGroup>
 </Project>

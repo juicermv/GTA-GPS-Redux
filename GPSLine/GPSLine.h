@@ -15,6 +15,7 @@
 #include <limits>
 
 #include "inipp.h"
+#include "Config.h"
 
 #include "plugin.h"
 #include "RenderWare.h"
@@ -74,32 +75,8 @@ private:
     HANDLE GPSLine::hThread = NULL;
 #endif
 
-    // Ini Config stuff
-    inipp::Ini<char> iniParser;
-    std::ifstream iniFile;
-
-    // Config values
-    static inline float GPSLine::GPS_LINE_WIDTH = -1;
-    static inline short GPSLine::GPS_LINE_R = -1;
-    static inline short GPSLine::GPS_LINE_G = -1;
-    static inline short GPSLine::GPS_LINE_B = -1;
-    static inline short GPSLine::GPS_LINE_A = -1;
-    static inline float GPSLine::DISABLE_PROXIMITY = -1;
-    static inline bool GPSLine::ENABLE_BMX = -1;
-    static inline bool GPSLine::ENABLE_MOVING = -1;
-    static inline bool GPSLine::ENABLE_WATER_GPS = -1;
-    
-    // Custom Colors config
-    static inline bool GPSLine::ENABLE_CUSTOM_CLRS = -1;
-    static inline CRGBA 
-        GPSLine::CC_RED,
-        GPSLine::CC_GREEN,
-        GPSLine::CC_BLUE,
-        GPSLine::CC_WHITE,
-        GPSLine::CC_PURPLE,
-        GPSLine::CC_YELLOW,
-        GPSLine::CC_CYAN
-    ;
+    // Config
+    Config cfg;
 
     //Logging stuff
     unsigned short GPSLine::logLines;
@@ -145,8 +122,6 @@ private:
     bool GPSLine::CheckBMX();
 
     const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
-
-    CRGBA GPSLine::ExtractColorFromString(std::string in);
 
     CRGBA GPSLine::SetupColor(short color, bool friendly, float height);
 

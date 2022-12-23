@@ -33,7 +33,7 @@ void GPSLine::calculatePath(
             (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT), // Respect rules of traffic. (only if in valid vehicle)
             CNodeAddress(),
             true,
-            (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && ENABLE_WATER_GPS) // Whether to do water navigation
+            (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && cfg.ENABLE_WATER_GPS) // Whether to do water navigation
         );
         nodePoints[0] = CVector2D(this->PlayerPos);
         this->PrevPos = this->PlayerPos;
@@ -65,36 +65,36 @@ void GPSLine::calculatePath(
 CRGBA GPSLine::SetupColor(short color, bool friendly, float height) {
     CRGBA clr;
 
-    if (ENABLE_CUSTOM_CLRS)
+    if (cfg.ENABLE_CUSTOM_CLRS)
     {
         switch (color)
         {
         case 0: // RED
-            clr = CC_RED; break;
+            clr = cfg.CC_RED; break;
         case 1: // GREEN
-            clr = CC_GREEN; break;
+            clr = cfg.CC_GREEN; break;
         case 2: // BLUE
-            clr = CC_BLUE; break;
+            clr = cfg.CC_BLUE; break;
         case 3: // WHITE
-            clr = CC_WHITE; break;
+            clr = cfg.CC_WHITE; break;
         case 4: // YELLOW
-            clr = CC_YELLOW; break;
+            clr = cfg.CC_YELLOW; break;
         case 5: // PURPLE
-            clr = CC_PURPLE; break;
+            clr = cfg.CC_PURPLE; break;
         case 6: // CYAN
-            clr = CC_CYAN; break;
+            clr = cfg.CC_CYAN; break;
         case 7: // Depends on whether blip is friendly.
             if (friendly) {
                 // BLUE
-                clr = CC_BLUE;
+                clr = cfg.CC_BLUE;
             }
             else {
                 // RED
-                clr = CC_RED;
+                clr = cfg.CC_RED;
             }
             break;
         case 8: // DESTINATION
-            clr = CC_YELLOW;
+            clr = cfg.CC_YELLOW;
             break;
         }
     }
@@ -102,7 +102,7 @@ CRGBA GPSLine::SetupColor(short color, bool friendly, float height) {
 
     if (color < 1 || color > 8)
     {
-        clr = CRGBA(GPS_LINE_R, GPS_LINE_G, GPS_LINE_B, GPS_LINE_A);
+        clr = CRGBA(cfg.GPS_LINE_R, cfg.GPS_LINE_G, cfg.GPS_LINE_B, cfg.GPS_LINE_A);
     }
 
     clr.r = std::clamp(clr.r + height, 0.0f, 255.0f);
@@ -174,10 +174,10 @@ void GPSLine::renderPath(
 
         if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
             // 1.5707963 radians = 90 degrees
-            shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH;
-            shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH;
-            shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH;
-            shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH;
+            shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
+            shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
+            shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
+            shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
         }
         else {
             float mp = FrontEndMenuManager.m_fMapZoom - 140.0f;
@@ -186,10 +186,10 @@ void GPSLine::renderPath(
             else if (mp > 960.0f)
                 mp = 960.0f;
             mp = mp / 960.0f + 0.4f;
-            shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
-            shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
-            shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
-            shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
+            shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+            shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+            shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+            shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
         }
 
         this->Setup2dVertex(                //
@@ -244,10 +244,10 @@ void GPSLine::renderPath(
     if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
         // 1.5707963 radians = 90 degrees
 
-        shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH;
-        shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH;
-        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH;
-        shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH;
+        shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
+        shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
+        shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
+        shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
     }
     else {
         float mp = FrontEndMenuManager.m_fMapZoom - 140.0f;
@@ -256,10 +256,10 @@ void GPSLine::renderPath(
         else if (mp > 960.0f)
             mp = 960.0f;
         mp = mp / 960.0f + 0.4f;
-        shift[0].x = cosf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
-        shift[0].y = sinf(angle - 1.5707963f) * GPS_LINE_WIDTH * mp;
-        shift[1].y = sinf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
-        shift[1].x = cosf(angle + 1.5707963f) * GPS_LINE_WIDTH * mp;
+        shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+        shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+        shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+        shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
     }
 
     this->Log("DIR: " + std::to_string(dir.x) + ", " + std::to_string(dir.y));
@@ -316,7 +316,7 @@ void GPSLine::renderPath(
 
 // Check whether on BMX, will always return false if bmx support is enabled.
 bool GPSLine::CheckBMX() {
-    if (ENABLE_BMX)
+    if (this->cfg.ENABLE_BMX)
         return false;
     
     return FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BMX;
@@ -327,56 +327,9 @@ void GPSLine::Run() {
     this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
 
     // Load config values from file.
-    iniFile.open("SA.GPS.CONF.ini", std::ios::in);
-    iniParser.parse(iniFile);
-    this->Log("INI config loaded:");
-    iniParser.generate(this->logfile);
-    iniParser.strip_trailing_comments();
-    iniParser.interpolate();
-    this->Log("INI config processed:");
-    iniParser.generate(this->logfile);
-
-    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", GPS_LINE_WIDTH);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", ENABLE_BMX);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on boats", ENABLE_WATER_GPS);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation for moving targets", ENABLE_MOVING);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", DISABLE_PROXIMITY);
-
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", GPS_LINE_R);
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", GPS_LINE_G);
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line blue", GPS_LINE_B);
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line opacity", GPS_LINE_A);
-
-    inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", ENABLE_CUSTOM_CLRS);
+    Config::LoadConfig("SA.GPS.CONF.ini", this->cfg);
 
     // Parse custom colors
-    if (ENABLE_CUSTOM_CLRS) {
-        this->Log("Custom colors enabled.");
-        std::string buffer;
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "Red", buffer);
-        CC_RED = this->ExtractColorFromString(buffer);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "Green", buffer);
-        CC_GREEN = this->ExtractColorFromString(buffer);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "Blue", buffer);
-        CC_BLUE = this->ExtractColorFromString(buffer);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "White", buffer);
-        CC_WHITE = this->ExtractColorFromString(buffer);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "Yellow", buffer);
-        CC_YELLOW = this->ExtractColorFromString(buffer);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "Purple", buffer);
-        CC_PURPLE = this->ExtractColorFromString(buffer);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "Cyan", buffer);
-        CC_CYAN = this->ExtractColorFromString(buffer);
-    }
-
-    iniFile.close();
 
     for (short i = 0; i < 1024; i++) {
         pathNodesToStream[i] = 1;
@@ -407,7 +360,7 @@ void GPSLine::Run() {
             && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
             && FindPlayerPed(0)
             && DistanceBetweenPoints(CVector2D(this->PlayerPos),
-                CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= DISABLE_PROXIMITY)
+                CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= cfg.DISABLE_PROXIMITY)
         {
             this->once = false;
             CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
@@ -461,7 +414,7 @@ void GPSLine::Run() {
                 (
                     trace.m_nRadarSprite == 0 
                     && trace.m_nBlipDisplay > 1 
-                    && DistanceBetweenPoints(this->PlayerPos, trace.m_vecPos) > DISABLE_PROXIMITY
+                    && DistanceBetweenPoints(this->PlayerPos, trace.m_vecPos) > cfg.DISABLE_PROXIMITY
                 ) 
                 {
                     this->Log("Found contender.");
@@ -576,13 +529,13 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
     CVector destVec;
     switch (trace.m_nBlipType) {
     case 1:
-        if (ENABLE_MOVING)
+        if (cfg.ENABLE_MOVING)
             destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
         else
             return;
         break;
     case 2:
-        if(ENABLE_MOVING)
+        if(cfg.ENABLE_MOVING)
             destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
         else
             return;
@@ -631,49 +584,4 @@ const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
         out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(this->PlayerPos, vec.at(i).m_vecPos)) + "\n\t";
     }
     return out.c_str();
-}
-
-CRGBA GPSLine::ExtractColorFromString(std::string in) {
-    // Remove whitespace
-    in.erase(std::remove_if(in.begin(), in.end(), isspace), in.end());
-
-    size_t pos = 0;
-    unsigned char 
-        R = 0, 
-        G = 0,
-        B = 0,
-        A = 0
-    ;
-    
-    bool 
-        didR = false, 
-        didG = false,
-        didB = false,
-        didA = false
-    ;
-
-    for (unsigned char i = 0; i < 4; i++) {
-        pos = in.find(",");
-
-        if (!didR) {
-            R = (unsigned char)std::stoi(in.substr(0, pos));
-            didR = true;
-        }
-        else if (!didG) {
-            G = (unsigned char)std::stoi(in.substr(0, pos));
-            didG = true;
-        }
-        else if (!didB) {
-            B = (unsigned char)std::stoi(in.substr(0, pos));
-            didB = true;
-        }
-        else if (!didA) {
-            A = (unsigned char)std::stoi(in.substr(0, pos));
-            didA = true;
-        }
-
-        in.erase(0, pos + 1);
-    }
-    
-    return CRGBA(R, G, B, A);
 }
