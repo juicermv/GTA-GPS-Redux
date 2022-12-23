@@ -318,11 +318,11 @@ void GPSLine::renderPath(
 }
 
 // Check whether on BMX, will always return false if bmx support is enabled.
-bool GPSLine::CheckBMX() {
+bool GPSLine::CheckBMX(CPed* player) {
     if (this->cfg.ENABLE_BMX)
         return false;
     
-    return FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BMX;
+    return player->m_pVehicle->m_nVehicleSubClass == VEHICLE_BMX;
 }
 
 
@@ -434,7 +434,6 @@ GPSLine::~GPSLine() {
 void GPSLine::renderMissionTrace(tRadarTrace trace) {
     this->Log("Found mission objective blip.");
 
-    CVector destVec;
     switch (trace.m_nBlipType) {
     case 1:
         if (cfg.ENABLE_MOVING)
@@ -497,16 +496,28 @@ const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
     return out.c_str();
 }
 
+bool GPSLine::NavEnabled(CPed* player) {
+    return (
+            player
+            && player->m_pVehicle
+            && player->m_nPedFlags.bInVehicle
+            && player->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
+            && player->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
+            && !CTheScripts::bMiniGameInProgress
+            && !CheckBMX(player)
+        );
+}
+
 void GPSLine::DrawRadarOverlayHandle() {
+    this->targetRouteShown = false;
+    this->missionRouteShown = false;
+
     CPed* playa = FindPlayerPed(0);
-    if (playa
-        && playa->m_pVehicle
-        && playa->m_nPedFlags.bInVehicle
-        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
-        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
-        && playa->m_nStatus != STATUS_REMOTE_CONTROLLED
-        && !CheckBMX()
-        && FrontEndMenuManager.m_nTargetBlipIndex
+
+    if (!NavEnabled(playa))
+        return;
+
+    if (FrontEndMenuManager.m_nTargetBlipIndex
         && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
         && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
     {
@@ -515,19 +526,11 @@ void GPSLine::DrawRadarOverlayHandle() {
             this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z));
             this->once = true;
         }
-        this->targetRouteShown = false;
         this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance);
         this->renderPath(destPosn, -1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance, t_LineVerts);
     }
 
-    if (playa
-        && playa->m_pVehicle
-        && playa->m_nPedFlags.bInVehicle
-        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE
-        && playa->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI
-        && !CTheScripts::bMiniGameInProgress
-        && !CheckBMX()
-        && CTheScripts::IsPlayerOnAMission())
+    if (CTheScripts::IsPlayerOnAMission())
     {
         std::vector<tRadarTrace> traces;    // Couldn't use std::map due to some error in
         std::vector<float> trace_distances; // xstddef.
@@ -602,44 +605,63 @@ void GPSLine::GameEventHandle() {
     }
 }
 
+std::string float2string(float in) {
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << in;
+    return stream.str();
+}
+
 // Kilometers to Miles.
 float KMtoM(float km) {
     return km / 1.609f;
 }
 
-// Meters to feet.
-float mtof(float m) {
-    return m * 3.281;
+// Meters to yards.
+float mtoyard(float m) {
+    return m * 1.094;
 }
 
 std::string makeDist(float dist, short units) {
     if (dist >= 1000.0f) {
         dist /= 1000.0f;
-        return units == 1 ? std::to_string(dist) + "KM" : std::to_string(KMtoM(dist)) + "M";
+        return units == 0 ? float2string(dist) + "KM" :float2string(KMtoM(dist)) + "Mi";
     }
 
-    return units == 1 ? std::to_string(dist) + "m" : std::to_string(mtof(dist)) + "f";
+    return units == 0 ? float2string(dist) + "m" : float2string(mtoyard(dist)) + "yrd";
 }
 
 void GPSLine::DrawHudEventHandle() {
     if (!cfg.ENABLE_DISTANCE_TEXT)
         return;
 
-    if (CTheScripts::IsPlayerOnAMission()) {
+    if (!NavEnabled(FindPlayerPed(0)))
+        return;
+
+    if (CTheScripts::IsPlayerOnAMission() && missionRouteShown) {
         CFont::SetOrientation(ALIGN_CENTER);
         CFont::SetColor(this->CurrentColor);
         CFont::SetBackground(false, false);
         CFont::SetWrapx(500.0f);
-        CFont::SetScale(0.4f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
-            0.8f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
-        CFont::SetFontStyle(FONT_MENU);
+        CFont::SetScale(0.3f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
+            0.6f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
+        CFont::SetFontStyle(FONT_SUBTITLES);
         CFont::SetProportional(true);
         CFont::SetDropShadowPosition(1);
         CFont::SetDropColor(CRGBA(0, 0, 0, 180));
 
         CVector2D point;
         CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, -1.0f));
-        CFont::PrintString(point.x, point.y + 8.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f, (char *)makeDist(this->missionDistance, cfg.DISTANCE_UNITS).c_str());
+        CFont::PrintString(
+            point.x, 
+            point.y + 8.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f, 
+            (char *)makeDist(
+                DistanceBetweenPoints(
+                    FindPlayerCoors(0), 
+                    destVec
+                ), 
+                cfg.DISTANCE_UNITS
+            ).c_str()
+        );
     }
 
     if (!targetRouteShown)
@@ -655,14 +677,32 @@ void GPSLine::DrawHudEventHandle() {
 
     CFont::SetBackground(false, false);
     CFont::SetWrapx(500.0f);
-    CFont::SetScale(0.4f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
-        0.8f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
-    CFont::SetFontStyle(FONT_MENU);
+    CFont::SetScale(0.3f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
+        0.6f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
+    CFont::SetFontStyle(FONT_SUBTITLES);
     CFont::SetProportional(true);
     CFont::SetDropShadowPosition(1);
     CFont::SetDropColor(CRGBA(0, 0, 0, 180));
 
     CVector2D point;
-    CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, -1.0f));
-    CFont::PrintString(point.x, -(point.y + 8.0f) * static_cast<float>(RsGlobal.maximumHeight) / 448.0f, (char*)makeDist(this->targetDistance, cfg.DISTANCE_UNITS).c_str());
+    CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, 1.0f));
+    CFont::PrintString(
+        point.x, 
+        point.y - 20.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f, 
+        (char*)makeDist(
+            DistanceBetweenPoints(
+                CVector2D(
+                    this->PlayerPos
+                ),
+                CVector2D(
+                    CRadar::ms_RadarTrace[
+                        LOWORD(
+                            FrontEndMenuManager.m_nTargetBlipIndex
+                        )
+                    ].m_vecPos
+                )
+            ), 
+            cfg.DISTANCE_UNITS
+        ).c_str()
+    );
 }

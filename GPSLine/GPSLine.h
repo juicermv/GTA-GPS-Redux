@@ -13,6 +13,7 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <iomanip>
 
 #include "inipp.h"
 #include "Config.h"
@@ -89,6 +90,8 @@ private:
     float GPSLine::targetDistance;
     short GPSLine::targetNodesCount;
 
+    CVector destVec;
+
     CNodeAddress GPSLine::t_ResultNodes[MAX_NODE_POINTS];
     CVector2D GPSLine::t_NodePoints[MAX_NODE_POINTS];
     float GPSLine::t_NodeHeights[MAX_NODE_POINTS];
@@ -125,9 +128,11 @@ private:
 
     void GPSLine::Run();
 
-    bool GPSLine::CheckBMX();
+    bool GPSLine::CheckBMX(CPed* player);
 
     const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
+
+    bool NavEnabled(CPed* player);
 
     CRGBA GPSLine::SetupColor(short color, bool friendly, float height);
 
