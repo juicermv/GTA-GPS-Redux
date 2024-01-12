@@ -33,13 +33,13 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Clone PluginSDK
-      run: git clone https://github.com/DK22Pac/plugin-sdk ${{runner.temp}}/pluginsdk
-
     - name: Set PluginSDK dir path
       run: set PLUGIN_SDK_DIR="${{runner.temp}}/pluginsdk"
 
-    - run: "%PLUGIN_SDK_DIR%"
+    - name: Clone PluginSDK
+      run: git clone https://github.com/DK22Pac/plugin-sdk %PLUGIN_SDK_DIR%
+
+    - run: set PLUGIN_SDK_DIR
 
     - name: Generate PluginSDK for vs2022
       working-directory: ${{runner.temp}}/pluginsdk/tools/generate
