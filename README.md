@@ -13,10 +13,14 @@ The mod currently doesn't work with pickups due to technical reasons.
 In some missions, a nav route will not appear for a valid target. 
 This is a limitation of SA's pathfinding, as some coordinates break it and make it not generate any path. This also happens with the target route.
 
+Please note that SAMP builds aren't maintained since I don't have SAMP and am not familiar with how it works.
+
 ## Re-Upload Policy
 If you'd like to distribute this mod, please ask for my (juicermv) permission first. 
 If you downloaded this mod from anywhere other than https://github.com/juicermv/GTA-GPS-Redux,
 make sure the source you downloaded this mod from can be trusted and is approved by me. If you're concered about people reuploading this mod without permission, you may reach me at the page listed above.
+
+## You can find the latest release under the releases on the GitHub page. For the latest WIP build (unstable) check out the Actions tab on the GitHub.
 
 ## Installation
 
