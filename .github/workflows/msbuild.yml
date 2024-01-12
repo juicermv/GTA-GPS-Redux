@@ -40,7 +40,7 @@ jobs:
       run: set PLUGIN_SDL_DIR=${{env.RUNNER_TEMP}}/pluginsdk/
 
     - name: Generate PluginSDK for vs2022
-      run: \"./${{env.RUNNER_TEMP}}/pluginsdk/tools/generate/Visual Studio 2022.bat\"
+      run: "'./${{env.RUNNER_TEMP}}/pluginsdk/tools/generate/Visual Studio 2022.bat'"
 
     - name: Build PluginSDK
       working-directory: ${{env.RUNNER_TEMP}}/pluginsdk/
