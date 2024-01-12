@@ -159,7 +159,9 @@
     <ClInclude Include="inipp.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README.md" />
+    <None Include="..\README.md">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='GitHub Actions|Win32'">true</DeploymentContent>
+    </None>
     <None Include="SA.GPS.CONF.ini">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='GitHub Actions|Win32'">true</DeploymentContent>
     </None>
