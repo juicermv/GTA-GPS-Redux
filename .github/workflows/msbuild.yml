@@ -42,6 +42,10 @@ jobs:
     - name: Generate PluginSDK for vs2022
       run: "'./${{runner.temp}}/pluginsdk/tools/generate/Visual Studio 2022.bat'"
 
+    - name: Run ls
+      working-directory: ${{runner.temp}}/pluginsdk
+      run: ls
+
     - name: Build PluginSDK
       working-directory: ${{runner.temp}}/pluginsdk
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
