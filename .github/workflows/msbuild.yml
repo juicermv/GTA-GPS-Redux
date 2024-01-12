@@ -1,0 +1,63 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: MSBuild
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Github Actions
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Clone PluginSDK
+      uses: actions/checkout@v3
+      with:
+        repository: DK22Pac/plugin-sdk
+        path: ${{env.RUNNER_TEMP}}/pluginsdk/
+
+    - name: Set PluginSDK dir path
+      run: set PLUGIN_SDL_DIR=${{env.RUNNER_TEMP}}/pluginsdk/
+
+    - name: Generate PluginSDK for vs2022
+      run: "./${{env.RUNNER_TEMP}}/pluginsdk/tools/generate/Visual Studio 2022.bat"
+
+    - name: Build PluginSDK
+      working-directory: ${{env.RUNNER_TEMP}}/pluginsdk/
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:Configuration=Release plugin.sln
+
+    - name: Build plugin
+      working-directory: ${{env.GITHUB_WORKFLOW}}
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: GPS_Redux
+        path: ${{env.GITHUB_WORKFLOW}}/GPSLine/bin
+      
