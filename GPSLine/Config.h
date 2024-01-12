@@ -85,47 +85,47 @@ void Config::LoadConfig(const char* filename, Config &config) {
     iniParser.strip_trailing_comments();
     iniParser.interpolate();
 
-    inipp::get_value(iniParser.sections["Navigation Config"], "Respect direction of traffic", config.RESPECT_LANE_DIRECTION);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line width", config.GPS_LINE_WIDTH);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on bicycles", config.ENABLE_BMX);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation on boats", config.ENABLE_WATER_GPS);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Enable navigation for moving targets", config.ENABLE_MOVING);
-    inipp::get_value(iniParser.sections["Navigation Config"], "Navigation line removal proximity", config.DISABLE_PROXIMITY);
+    inipp::get_value(iniParser.sections["Navigation"], "respectTrafficLaneDirection", config.RESPECT_LANE_DIRECTION);
+    inipp::get_value(iniParser.sections["Navigation"], "lineWidth", config.GPS_LINE_WIDTH);
+    inipp::get_value(iniParser.sections["Navigation"], "enableOnBicycles", config.ENABLE_BMX);
+    inipp::get_value(iniParser.sections["Navigation"], "enableOnBoats", config.ENABLE_WATER_GPS);
+    inipp::get_value(iniParser.sections["Navigation"], "trackMovingTargets", config.ENABLE_MOVING);
+    inipp::get_value(iniParser.sections["Navigation"], "removeRadius", config.DISABLE_PROXIMITY);
     
-    inipp::get_value(iniParser.sections["Extras"], "Enable distance display", config.ENABLE_DISTANCE_TEXT);
-    inipp::get_value(iniParser.sections["Extras"], "Units", config.DISTANCE_UNITS);
+    inipp::get_value(iniParser.sections["Extras"], "displayDistance", config.ENABLE_DISTANCE_TEXT);
+    inipp::get_value(iniParser.sections["Extras"], "distanceUnits", config.DISTANCE_UNITS);
 
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line red", config.GPS_LINE_R);
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line green", config.GPS_LINE_G);
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line blue", config.GPS_LINE_B);
-    inipp::get_value(iniParser.sections["Waypoint Config"], "Waypoint line opacity", config.GPS_LINE_A);
+    inipp::get_value(iniParser.sections["Waypoint"], "lineRed", config.GPS_LINE_R);
+    inipp::get_value(iniParser.sections["Waypoint"], "lineGreen", config.GPS_LINE_G);
+    inipp::get_value(iniParser.sections["Waypoint"], "lineBlue", config.GPS_LINE_B);
+    inipp::get_value(iniParser.sections["Waypoint"], "lineAlpha", config.GPS_LINE_A);
 
-    inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", config.ENABLE_CUSTOM_CLRS);
+    inipp::get_value(iniParser.sections["Custom Colors"], "enabled", config.ENABLE_CUSTOM_CLRS);
 
-    inipp::get_value(iniParser.sections["Misc"], "Enable logfile", config.LOGFILE_ENABLED);
+    inipp::get_value(iniParser.sections["Misc"], "enableLog", config.LOGFILE_ENABLED);
 
     if (config.ENABLE_CUSTOM_CLRS) {
         std::string buffer;
 
-        inipp::get_value(iniParser.sections["Custom Colors"], "Red", buffer);
+        inipp::get_value(iniParser.sections["Custom Colors"], "red", buffer);
         ExtractColorFromString(buffer, config.CC_RED);
 
-        inipp::get_value(iniParser.sections["Custom Colors"], "Green", buffer);
+        inipp::get_value(iniParser.sections["Custom Colors"], "green", buffer);
         ExtractColorFromString(buffer, config.CC_GREEN);
 
-        inipp::get_value(iniParser.sections["Custom Colors"], "Blue", buffer);
+        inipp::get_value(iniParser.sections["Custom Colors"], "blue", buffer);
         ExtractColorFromString(buffer, config.CC_BLUE);
 
-        inipp::get_value(iniParser.sections["Custom Colors"], "White", buffer);
+        inipp::get_value(iniParser.sections["Custom Colors"], "white", buffer);
         ExtractColorFromString(buffer, config.CC_WHITE);
 
-        inipp::get_value(iniParser.sections["Custom Colors"], "Yellow", buffer);
+        inipp::get_value(iniParser.sections["Custom Colors"], "yellow", buffer);
         ExtractColorFromString(buffer, config.CC_YELLOW);
 
-        inipp::get_value(iniParser.sections["Custom Colors"], "Purple", buffer);
+        inipp::get_value(iniParser.sections["Custom Colors"], "purple", buffer);
         ExtractColorFromString(buffer, config.CC_PURPLE);
 
-        inipp::get_value(iniParser.sections["Custom Colors"], "Cyan", buffer);
+        inipp::get_value(iniParser.sections["Custom Colors"], "cyan", buffer);
         ExtractColorFromString(buffer, config.CC_CYAN);
     }
 

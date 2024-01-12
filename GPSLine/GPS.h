@@ -69,47 +69,45 @@ typedef struct stOpcodeRelCall
 #pragma pack(pop)
 #endif
 
-class GPSLine {
+class GPS {
 private:
 #ifdef SAMP
-    HANDLE GPSLine::hThread = NULL;
+    HANDLE hThread = NULL;
 #endif
 
     // Config
     Config cfg;
 
     //Logging stuff
-    unsigned short GPSLine::logLines;
-    std::ofstream GPSLine::logfile;
-    void GPSLine::Log(std::string val);
+    unsigned short logLines;
+    std::ofstream logfile;
+    void Log(std::string val);
     bool once;
 
     // These variables will be used for the gps route following the target blip set by the player
-    float GPSLine::targetDistance;
-    short GPSLine::targetNodesCount;
+    float targetDistance;
+    short targetNodesCount;
 
     CVector destVec;
 
-    CNodeAddress GPSLine::t_ResultNodes[MAX_NODE_POINTS];
-    float GPSLine::t_NodeHeights[MAX_NODE_POINTS];
-    RwIm2DVertex GPSLine::t_LineVerts[MAX_NODE_POINTS * 4];
+    CNodeAddress t_ResultNodes[MAX_NODE_POINTS];
+    RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
 
     // These will be used for mission objectives
-    float GPSLine::missionDistance;
-    short GPSLine::missionNodesCount;
+    float missionDistance;
+    short missionNodesCount;
 
-    CNodeAddress GPSLine::m_ResultNodes[MAX_NODE_POINTS];
-    float GPSLine::m_NodeHeights[MAX_NODE_POINTS];
-    RwIm2DVertex GPSLine::m_LineVerts[MAX_NODE_POINTS * 4];
+    CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
+    RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
 
-    char GPSLine::pathNodesToStream[1024];
-    int GPSLine::pathNodes[50000];
+    char pathNodesToStream[1024];
+    int pathNodes[50000];
 
-    CVector GPSLine::PrevPos;
-    CVector GPSLine::PrevDest;
+    CVector PrevPos;
+    CVector PrevDest;
 
-    CVector GPSLine::PlayerPos;
-    void GPSLine::UpdatePlayerPos();
+    CVector PlayerPos;
+    void UpdatePlayerPos();
 
     bool renderMissionRoute;
     bool renderTargetRoute;
@@ -121,34 +119,34 @@ private:
     CRGBA CurrentColor;
 
 #ifdef SAMP
-    static LPVOID WINAPI GPSLine::init(LPVOID* lpParam);
+    static LPVOID WINAPI init(LPVOID* lpParam);
 #endif
 
-    void GPSLine::DrawRadarOverlayHandle();
-    void GPSLine::GameEventHandle();
-    void GPSLine::DrawHudEventHandle();
+    void DrawRadarOverlayHandle();
+    void GameEventHandle();
+    void DrawHudEventHandle();
 
-    void GPSLine::Run();
+    void Run();
 
-    bool GPSLine::CheckBMX(CPed* player);
+    bool CheckBMX(CPed* player);
 
-    const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec);
+    const char* VectorToString(std::vector<tRadarTrace>& vec);
 
     bool NavEnabled(CPed* player);
 
-    CRGBA GPSLine::SetupColor(short color, bool friendly);
+    CRGBA SetupColor(short color, bool friendly);
 
-    void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr);
+    void Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr);
 
     // Self explanatory.
-    void GPSLine::calculatePath(
+    void calculatePath(
         CVector destPosn,
         short& nodesCount,
         CNodeAddress* resultNodes,
         float& gpsDistance
     );
 
-    void GPSLine::renderPath(
+    void renderPath(
         CVector tracePos, 
         short color, 
         bool friendly, 
@@ -158,9 +156,9 @@ private:
         RwIm2DVertex* lineVerts
     );
 
-    void GPSLine::renderMissionTrace(tRadarTrace trace);
+    void renderMissionTrace(tRadarTrace trace);
 
 public:
-    GPSLine();
-    ~GPSLine();
+    GPS();
+    ~GPS();
 } GPSLineRedux;
