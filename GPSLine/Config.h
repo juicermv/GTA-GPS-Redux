@@ -102,7 +102,7 @@ void Config::LoadConfig(const char* filename, Config &config) {
 
     inipp::get_value(iniParser.sections["Custom Colors"], "Enabled", config.ENABLE_CUSTOM_CLRS);
 
-    inipp::get_value(iniParser.sections["Misc"], "Enable Logfile", config.LOGFILE_ENABLED);
+    inipp::get_value(iniParser.sections["Misc"], "Enable logfile", config.LOGFILE_ENABLED);
 
     if (config.ENABLE_CUSTOM_CLRS) {
         std::string buffer;

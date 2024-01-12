@@ -33,7 +33,6 @@
 #include "CPickups.h"
 #include "CTheScripts.h"
 #include "CHudColours.h"
-#include "RenderWare.h"
 #include "Color.h"
 #include "CFont.h"
 #include "d3d9.h"
@@ -86,24 +85,20 @@ private:
     bool once;
 
     // These variables will be used for the gps route following the target blip set by the player
-    bool GPSLine::targetRouteShown;
     float GPSLine::targetDistance;
     short GPSLine::targetNodesCount;
 
     CVector destVec;
 
     CNodeAddress GPSLine::t_ResultNodes[MAX_NODE_POINTS];
-    CVector2D GPSLine::t_NodePoints[MAX_NODE_POINTS];
     float GPSLine::t_NodeHeights[MAX_NODE_POINTS];
     RwIm2DVertex GPSLine::t_LineVerts[MAX_NODE_POINTS * 4];
 
     // These will be used for mission objectives
-    bool GPSLine::missionRouteShown;
     float GPSLine::missionDistance;
     short GPSLine::missionNodesCount;
 
     CNodeAddress GPSLine::m_ResultNodes[MAX_NODE_POINTS];
-    CVector2D GPSLine::m_NodePoints[MAX_NODE_POINTS];
     float GPSLine::m_NodeHeights[MAX_NODE_POINTS];
     RwIm2DVertex GPSLine::m_LineVerts[MAX_NODE_POINTS * 4];
 
@@ -115,6 +110,13 @@ private:
 
     CVector GPSLine::PlayerPos;
     void GPSLine::UpdatePlayerPos();
+
+    bool renderMissionRoute;
+    bool renderTargetRoute;
+
+    CVector targetTracePos;
+
+    tRadarTrace mTrace;
 
     CRGBA CurrentColor;
 
@@ -134,7 +136,7 @@ private:
 
     bool NavEnabled(CPed* player);
 
-    CRGBA GPSLine::SetupColor(short color, bool friendly, float height);
+    CRGBA GPSLine::SetupColor(short color, bool friendly);
 
     void GPSLine::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr);
 
@@ -143,8 +145,6 @@ private:
         CVector destPosn,
         short& nodesCount,
         CNodeAddress* resultNodes,
-        CVector2D* nodePoints,
-        float* nodeHeights,
         float& gpsDistance
     );
 
@@ -153,10 +153,7 @@ private:
         short color, 
         bool friendly, 
         short& nodesCount, 
-        bool& gpsShown, 
         CNodeAddress* resultNodes, 
-        CVector2D* nodePoints, 
-        float* NodeHeights,
         float& gpsDistance, 
         RwIm2DVertex* lineVerts
     );

@@ -9,64 +9,36 @@ void GPSLine::calculatePath(
     CVector destPosn, 
     short& nodesCount, 
     CNodeAddress* resultNodes,
-    CVector2D* nodePoints, 
-    float* nodeHeights,
     float& gpsDistance
 )
 {
     destPosn.z = CWorld::FindGroundZForCoord(destPosn.x, destPosn.y);
 
-    if (DistanceBetweenPoints(PrevPos, this->PlayerPos) >= 20.0f || (this->PrevDest.Magnitude() - destPosn.Magnitude()) != 0) {
-        ThePaths.DoPathSearch
+    ThePaths.DoPathSearch
+    (
+        0,
+        this->PlayerPos,
+        CNodeAddress(),
+        destPosn,
+        resultNodes,
+        &nodesCount,
+        MAX_NODE_POINTS,
+        &gpsDistance,
+        999999.0f,
+        NULL,
+        999999.0f,
         (
-            0,
-            this->PlayerPos,
-            CNodeAddress(),
-            destPosn,
-            resultNodes,
-            &nodesCount,
-            MAX_NODE_POINTS,
-            &gpsDistance,
-            999999.0f,
-            NULL,
-            999999.0f,
-            (
-                FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT
-                && FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Respect rules of traffic. (only if in valid vehicle & enabled in config)
-                && cfg.RESPECT_LANE_DIRECTION
-            ), 
-            CNodeAddress(),
-            true,
-            (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && cfg.ENABLE_WATER_GPS) // Whether to do water navigation
-        );
-        nodePoints[0] = CVector2D(this->PlayerPos);
-        this->PrevPos = this->PlayerPos;
-        this->PrevDest = destPosn;
-    }
-
-    for (unsigned short i = 0; i < nodesCount; i++) {
-        // TODO you can extract width from this as well
-        CPathNode *currentNode = ThePaths.GetPathNode(resultNodes[i]);
-        CVector nodePosn = currentNode->GetNodeCoors();
-
-
-        nodeHeights[i] = 20 / CWorld::FindGroundZForCoord(nodePosn.x, nodePosn.y);
-
-        CVector2D tmpPoint;
-        CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, CVector2D(nodePosn.x, nodePosn.y));
-        if (!FrontEndMenuManager.m_bDrawRadarOrMap)
-            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
-        else {
-            CRadar::LimitRadarPoint(tmpPoint);
-            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
-            nodePoints[i].x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
-            nodePoints[i].y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
-            CRadar::LimitToMap(&nodePoints[i].x, &nodePoints[i].y);
-        }
-    }
+            FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT
+            && FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Respect rules of traffic. (only if in valid vehicle & enabled in config)
+            && cfg.RESPECT_LANE_DIRECTION
+            ),
+        CNodeAddress(),
+        true,
+        (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && cfg.ENABLE_WATER_GPS) // Whether to do water navigation
+    );
 }
 
-CRGBA GPSLine::SetupColor(short color, bool friendly, float height) {
+CRGBA GPSLine::SetupColor(short color, bool friendly) {
     CRGBA clr;
 
     if (cfg.ENABLE_CUSTOM_CLRS)
@@ -112,10 +84,6 @@ CRGBA GPSLine::SetupColor(short color, bool friendly, float height) {
         this->CurrentColor = clr;
     }
 
-    clr.r = std::clamp(clr.r + height, 0.0f, 255.0f);
-    clr.g = std::clamp(clr.g + height, 0.0f, 255.0f);
-    clr.b = std::clamp(clr.b + height, 0.0f, 255.0f);
-
     return clr;
 }
 
@@ -133,17 +101,33 @@ void GPSLine::renderPath(
     CVector tracePos, 
     short color, 
     bool friendly, 
-    short& nodesCount, 
-    bool& gpsShown, 
-    CNodeAddress* resultNodes, 
-    CVector2D* nodePoints, 
-    float* nodeHeights,
+    short& nodesCount,
+    CNodeAddress* resultNodes,  
     float& gpsDistance,
     RwIm2DVertex* lineVerts
 )
 {
     if (nodesCount <= 0) {
         return;
+    }
+
+    CVector2D nodePoints[MAX_NODE_POINTS];
+
+    for (unsigned short i = 0; i < nodesCount; i++) {
+        CPathNode* currentNode = ThePaths.GetPathNode(resultNodes[i]);
+        CVector nodePosn = currentNode->GetNodeCoors();
+
+        CVector2D tmpPoint;
+        CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, CVector2D(nodePosn.x, nodePosn.y));
+        if (!FrontEndMenuManager.m_bDrawRadarOrMap)
+            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
+        else {
+            CRadar::LimitRadarPoint(tmpPoint);
+            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
+            nodePoints[i].x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
+            nodePoints[i].y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
+            CRadar::LimitToMap(&nodePoints[i].x, &nodePoints[i].y);
+        }
     }
 
 
@@ -161,19 +145,19 @@ void GPSLine::renderPath(
         CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(1.0f, 1.0f));
         rect.right = static_cast<LONG>(posn.x - 2.0f);
         rect.top = static_cast<LONG>(posn.y + 2.0f);
-        GetD3DDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
-        GetD3DDevice()->SetScissorRect(&rect);
+        GetD3DDevice<IDirect3DDevice9>()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+        GetD3DDevice<IDirect3DDevice9>()->SetScissorRect(&rect);
     }
 
     RwRenderStateSet(rwRENDERSTATETEXTURERASTER, NULL);
     
-    CRGBA vColor = this->SetupColor(color, friendly, false);
+    CRGBA vColor = this->SetupColor(color, friendly);
 
     unsigned int vertIndex = 0;
     short lasti;
     CVector2D shift[2];
     for (unsigned short i = 0; i < (nodesCount - 1); i++) {
-        vColor = this->SetupColor(color, friendly, nodeHeights[i]);
+        vColor = this->SetupColor(color, friendly);
         
         // TODO: Move this (shift calculation) into a function.
         CVector2D dir = nodePoints[i + 1] - nodePoints[i]; // Direction between current node to next node
@@ -269,7 +253,7 @@ void GPSLine::renderPath(
         shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
     }
 
-    this->Log("DIR: " + std::to_string(dir.x) + ", " + std::to_string(dir.y));
+    //this->Log("DIR: " + std::to_string(dir.x) + ", " + std::to_string(dir.y));
 
     this->Setup2dVertex(
         lineVerts[vertIndex+0],
@@ -314,11 +298,10 @@ void GPSLine::renderPath(
         && reinterpret_cast<D3DCAPS9 const*>(RwD3D9GetCaps())->RasterCaps & D3DPRASTERCAPS_SCISSORTEST
     )
     {
-        GetD3DDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+        GetD3DDevice<IDirect3DDevice9>()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
     }
 
     gpsDistance += DistanceBetweenPoints(this->PlayerPos, ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
-    gpsShown = true;
 }
 
 // Check whether on BMX, will always return false if bmx support is enabled.
@@ -362,7 +345,7 @@ void GPSLine::Run() {
 
     plugin::Events::drawRadarOverlayEvent += [this]() { this->DrawRadarOverlayHandle(); };
 
-    plugin::Events::drawHudEvent += [this]() { this->DrawHudEventHandle(); };
+    plugin::Events::drawRadarEvent += [this]() { this->DrawHudEventHandle(); };
 }
 
 #ifdef SAMP
@@ -436,20 +419,20 @@ GPSLine::~GPSLine() {
 }
 
 void GPSLine::renderMissionTrace(tRadarTrace trace) {
-    this->Log("Found mission objective blip.");
+    //this->Log("Found mission objective blip.");
 
     switch (trace.m_nBlipType) {
     case 1:
         if (cfg.ENABLE_MOVING)
             destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
         else
-            return;
+            renderMissionRoute = false; return;
         break;
     case 2:
-        if(cfg.ENABLE_MOVING)
+        if (cfg.ENABLE_MOVING)
             destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
         else
-            return;
+            renderMissionRoute = false; return;
         break;
     case 3:
         destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
@@ -459,17 +442,16 @@ void GPSLine::renderMissionTrace(tRadarTrace trace) {
     case 0: // NONE???
         return;
     case 7: // Pickups
-        this->Log("Pickup detected. Not providing GPS navigation!");
+        //this->Log("Pickup detected. Not providing GPS navigation!");
         return;
     default:
         destVec = trace.m_vecPos;
         break;
     }
 
-    this->Log("DestVec: " + std::to_string(destVec.x) + ", " + std::to_string(destVec.y));
-    this->missionRouteShown = false;
-    this->calculatePath(destVec, missionNodesCount, m_ResultNodes, m_NodePoints, m_NodeHeights, missionDistance);
-    this->renderPath(destVec, trace.m_nColour, trace.m_bFriendly, missionNodesCount, missionRouteShown, m_ResultNodes, m_NodePoints, m_NodeHeights, missionDistance, m_LineVerts);
+    //this->Log("DestVec: " + std::to_string(destVec.x) + ", " + std::to_string(destVec.y));
+    this->calculatePath(destVec, missionNodesCount, m_ResultNodes, missionDistance);
+    this->renderPath(destVec, trace.m_nColour, trace.m_bFriendly, missionNodesCount, m_ResultNodes, missionDistance, m_LineVerts);
 }
 
 void GPSLine::Log(std::string val) {
@@ -497,7 +479,8 @@ const char* GPSLine::VectorToString(std::vector<tRadarTrace>& vec) {
     for (unsigned short i = 0; i < (unsigned short)vec.size() - 1; i++) {
         out += std::to_string((int)vec.at(i).m_nRadarSprite) + ", " + std::to_string(DistanceBetweenPoints(this->PlayerPos, vec.at(i).m_vecPos)) + "\n\t";
     }
-    return out.c_str();
+    const char* outChar = out.c_str();
+    return outChar;
 }
 
 bool GPSLine::NavEnabled(CPed* player) {
@@ -513,27 +496,29 @@ bool GPSLine::NavEnabled(CPed* player) {
 }
 
 void GPSLine::DrawRadarOverlayHandle() {
-    this->targetRouteShown = false;
-    this->missionRouteShown = false;
-
     CPed* playa = FindPlayerPed(0);
 
     if (!NavEnabled(playa))
         return;
+    
+    if (renderTargetRoute)
+        this->renderPath(targetTracePos, -1, false, targetNodesCount, t_ResultNodes, targetDistance, t_LineVerts);
 
-    if (FrontEndMenuManager.m_nTargetBlipIndex
-        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
-        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
+    if (renderMissionRoute)
     {
-        CVector destPosn = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
-        if (!this->once) {
-            this->Log("TARGET POS: " + std::to_string(destPosn.x) + ", " + std::to_string(destPosn.y) + ", " + std::to_string(destPosn.z));
-            this->once = true;
+        try
+        {
+            this->renderMissionTrace(mTrace);
         }
-        this->calculatePath(destPosn, targetNodesCount, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance);
-        this->renderPath(destPosn, -1, false, targetNodesCount, targetRouteShown, t_ResultNodes, t_NodePoints, t_NodeHeights, targetDistance, t_LineVerts);
+        catch (const std::exception& e)
+        {
+            Log(e.what());
+            renderMissionRoute = false;
+        }
+        
     }
 
+    /*
     if (CTheScripts::IsPlayerOnAMission())
     {
         std::vector<tRadarTrace> traces;    // Couldn't use std::map due to some error in
@@ -541,6 +526,7 @@ void GPSLine::DrawRadarOverlayHandle() {
 
         this->Log("Looking for mission objective blip.");
 
+        
         for (int i = 0; i < 174; i++)
         {
 
@@ -587,25 +573,91 @@ void GPSLine::DrawRadarOverlayHandle() {
                 ]
             );
         }
+        
     }
+    */
 }
 
+
 void GPSLine::GameEventHandle() {
-    /*
-        Clears target blip when player reaches it.
-    */
+    if (!NavEnabled(FindPlayerPed(0)))
+        return;
+
     this->UpdatePlayerPos();
+
+    // Verify that blip still exists
+    for (int i = 0; i < 175; i++) {
+        if (CRadar::ms_RadarTrace[i].m_nEntityHandle != mTrace.m_nEntityHandle) {
+            renderMissionRoute = false;
+        }
+        else
+        {
+            mTrace = CRadar::ms_RadarTrace[i];
+            renderMissionRoute = true;
+            break;
+        }
+    }
+
+    try {
+        if (mTrace.m_nBlipDisplay <= 1 || DistanceBetweenPoints(this->PlayerPos, mTrace.m_vecPos) <= cfg.DISABLE_PROXIMITY)
+        {
+            renderMissionRoute = false;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        Log(e.what());
+        renderMissionRoute = false;
+    }
 
     if (FrontEndMenuManager.m_nTargetBlipIndex
         && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
         && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
-        && FindPlayerPed(0)
         && DistanceBetweenPoints(CVector2D(this->PlayerPos),
-            CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= cfg.DISABLE_PROXIMITY)
+            CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= cfg.DISABLE_PROXIMITY
+    )
     {
-        this->once = false;
         CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
         FrontEndMenuManager.m_nTargetBlipIndex = 0;
+        renderTargetRoute = false;
+    }
+    
+    if (FrontEndMenuManager.m_nTargetBlipIndex
+        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
+        && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
+        )
+    {
+        targetTracePos = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
+        this->calculatePath(targetTracePos, targetNodesCount, t_ResultNodes, targetDistance);
+        renderTargetRoute = true;
+    }
+    
+    
+    if(FrontEndMenuManager.m_nTargetBlipIndex == 0) {
+        renderTargetRoute = false;
+    }
+
+    try {
+        if (CTheScripts::IsPlayerOnAMission()) {
+            for (int i = 0; i < 175; i++) {
+                tRadarTrace trace = CRadar::ms_RadarTrace[i];
+                if (trace.m_nRadarSprite == 0
+                    && trace.m_nBlipDisplay > 1
+                    ) {
+                    mTrace = trace;
+                    renderMissionRoute = true;
+                    break;
+                }
+            }
+        }
+        else {
+            renderMissionRoute = false;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        Log(e.what());
+        renderMissionRoute = false;
     }
 }
 
@@ -641,7 +693,7 @@ void GPSLine::DrawHudEventHandle() {
     if (!NavEnabled(FindPlayerPed(0)))
         return;
 
-    if (CTheScripts::IsPlayerOnAMission() && missionRouteShown) {
+    if (renderMissionRoute) {
         CFont::SetOrientation(ALIGN_CENTER);
         CFont::SetColor(this->CurrentColor);
         CFont::SetBackground(false, false);
@@ -668,45 +720,45 @@ void GPSLine::DrawHudEventHandle() {
         );
     }
 
-    if (!targetRouteShown)
-        return;
+    if (renderTargetRoute) {
 
-    CFont::SetOrientation(ALIGN_CENTER);
-    CFont::SetColor(CRGBA(
-        (unsigned char)cfg.GPS_LINE_R,
-        (unsigned char)cfg.GPS_LINE_G,
-        (unsigned char)cfg.GPS_LINE_B,
-        (unsigned char)cfg.GPS_LINE_A
-    ));
+        CFont::SetOrientation(ALIGN_CENTER);
+        CFont::SetColor(CRGBA(
+            (unsigned char)cfg.GPS_LINE_R,
+            (unsigned char)cfg.GPS_LINE_G,
+            (unsigned char)cfg.GPS_LINE_B,
+            (unsigned char)cfg.GPS_LINE_A
+        ));
 
-    CFont::SetBackground(false, false);
-    CFont::SetWrapx(500.0f);
-    CFont::SetScale(0.3f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
-        0.6f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
-    CFont::SetFontStyle(FONT_SUBTITLES);
-    CFont::SetProportional(true);
-    CFont::SetDropShadowPosition(1);
-    CFont::SetDropColor(CRGBA(0, 0, 0, 180));
+        CFont::SetBackground(false, false);
+        CFont::SetWrapx(500.0f);
+        CFont::SetScale(0.3f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
+            0.6f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f);
+        CFont::SetFontStyle(FONT_SUBTITLES);
+        CFont::SetProportional(true);
+        CFont::SetDropShadowPosition(1);
+        CFont::SetDropColor(CRGBA(0, 0, 0, 180));
 
-    CVector2D point;
-    CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, 1.0f));
-    CFont::PrintString(
-        point.x, 
-        point.y - 20.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f, 
-        (char*)makeDist(
-            DistanceBetweenPoints(
-                CVector2D(
-                    this->PlayerPos
+        CVector2D point;
+        CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, 1.0f));
+        CFont::PrintString(
+            point.x,
+            point.y - 20.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f,
+            (char*)makeDist(
+                DistanceBetweenPoints(
+                    CVector2D(
+                        this->PlayerPos
+                    ),
+                    CVector2D(
+                        CRadar::ms_RadarTrace[
+                            LOWORD(
+                                FrontEndMenuManager.m_nTargetBlipIndex
+                            )
+                        ].m_vecPos
+                    )
                 ),
-                CVector2D(
-                    CRadar::ms_RadarTrace[
-                        LOWORD(
-                            FrontEndMenuManager.m_nTargetBlipIndex
-                        )
-                    ].m_vecPos
-                )
-            ), 
-            cfg.DISTANCE_UNITS
-        ).c_str()
-    );
+                cfg.DISTANCE_UNITS
+            ).c_str()
+        );
+    }
 }
