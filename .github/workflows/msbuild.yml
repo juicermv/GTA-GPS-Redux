@@ -40,7 +40,7 @@ jobs:
       run: set PLUGIN_SDL_DIR=${{runner.temp}}/pluginsdk
 
     - name: Generate PluginSDK for vs2022
-      run: "'./${{runner.temp}}/pluginsdk/tools/generate/Visual Studio 2022.bat'"
+      run: "'${{runner.temp}}/pluginsdk/tools/generate/Visual Studio 2022.bat'"
 
     - name: Run ls
       working-directory: ${{runner.temp}}/pluginsdk
@@ -50,7 +50,7 @@ jobs:
       working-directory: ${{runner.temp}}/pluginsdk
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=Release /property:Platform=Win32 .
+      run: msbuild /m /p:Configuration=Release /property:Platform=Win32 plugin.sln
 
     - name: Build plugin
       working-directory: ${{env.GITHUB_WORKFLOW}}
