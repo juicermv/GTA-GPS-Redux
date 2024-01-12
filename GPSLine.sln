@@ -7,10 +7,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPSLine", "GPSLine\GPSLine.
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		GitHub Actions|x86 = GitHub Actions|x86
 		GTASA Release|x86 = GTASA Release|x86
 		SAMP Release|x86 = SAMP Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B212DDA4-2A8E-45B2-914D-7BEEB31D06B1}.GitHub Actions|x86.ActiveCfg = GitHub Actions|Win32
+		{B212DDA4-2A8E-45B2-914D-7BEEB31D06B1}.GitHub Actions|x86.Build.0 = GitHub Actions|Win32
 		{B212DDA4-2A8E-45B2-914D-7BEEB31D06B1}.GTASA Release|x86.ActiveCfg = GTASA Release|Win32
 		{B212DDA4-2A8E-45B2-914D-7BEEB31D06B1}.GTASA Release|x86.Build.0 = GTASA Release|Win32
 		{B212DDA4-2A8E-45B2-914D-7BEEB31D06B1}.SAMP Release|x86.ActiveCfg = SAMP Release|Win32
