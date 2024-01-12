@@ -37,8 +37,10 @@ jobs:
       run: git clone https://github.com/DK22Pac/plugin-sdk ${{runner.temp}}/pluginsdk
 
     - name: Set PLUGIN_SDK_DIR
-      run: setx PLUGIN_SDK_DIR "${{runner.temp}}/pluginsdk"
+      run: $env:PLUGIN_SDK_DIR="${{runner.temp}}/pluginsdk"
 
+    - name: Set GitHub PLUGIN_SDK_DIR
+      run: echo "PLUGIN_SDK_DIR=${{runner.temp}}/pluginsdk" | Out-File -FilePath $env:GITHUB_ENV
 
     - name: Generate PluginSDK for vs2022
       run: ${{runner.temp}}/pluginsdk/tools/premake/premake5.exe vs2022 --file="${{runner.temp}}/pluginsdk/tools/premake/premake5.lua"
