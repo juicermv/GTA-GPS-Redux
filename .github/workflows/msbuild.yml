@@ -37,9 +37,9 @@ jobs:
       run: git clone https://github.com/DK22Pac/plugin-sdk ${{runner.temp}}/pluginsdk
 
     - name: Set PluginSDK dir path
-      run: set PLUGIN_SDK_DIR=${{runner.temp}}/pluginsdk
+      run: set PLUGIN_SDK_DIR="${{runner.temp}}/pluginsdk"
 
-    - run: echo %PLUGIN_SDK_DIR%
+    - run: "%PLUGIN_SDK_DIR%"
 
     - name: Generate PluginSDK for vs2022
       working-directory: ${{runner.temp}}/pluginsdk/tools/generate
