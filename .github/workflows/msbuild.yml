@@ -46,7 +46,7 @@ jobs:
       working-directory: ${{runner.temp}}/pluginsdk/
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=Release /property:Platform=Win32 plugin.sln
+      run: msbuild /m /p:Configuration=Release /property:Platform=Win32 .
 
     - name: Build plugin
       working-directory: ${{env.GITHUB_WORKFLOW}}
