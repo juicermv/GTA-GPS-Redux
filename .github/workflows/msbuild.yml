@@ -41,7 +41,7 @@ jobs:
 
     - name: Generate PluginSDK for vs2022
       working-directory: ${{runner.temp}}/pluginsdk/tools/generate
-      run: "./\"Visual Studio 2022.bat\""
+      run: ".\\\"Visual Studio 2022.bat\""
 
     - name: Run ls
       working-directory: ${{runner.temp}}/pluginsdk
