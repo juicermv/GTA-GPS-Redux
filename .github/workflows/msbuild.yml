@@ -20,6 +20,8 @@ env:
   # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
   BUILD_CONFIGURATION: Github Actions
 
+  PLUGIN_SDK_DIR: ${{runner.temp}}/pluginsdk
+
 permissions:
   contents: read
 
@@ -37,7 +39,7 @@ jobs:
       run: git clone https://github.com/DK22Pac/plugin-sdk ${{runner.temp}}/pluginsdk
 
     - name: Set PluginSDK dir path
-      run: set PLUGIN_SDK_DIR=${{runner.temp}}/pluginsdk
+      run: set PLUGIN_SDK_DIR=${{runner.temp}}/pluginsdk -RunAsAdmin
 
     - name: Generate PluginSDK for vs2022
       working-directory: ${{runner.temp}}/pluginsdk/tools/generate
