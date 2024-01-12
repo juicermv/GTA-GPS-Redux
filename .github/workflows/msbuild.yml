@@ -41,12 +41,7 @@ jobs:
 
 
     - name: Generate PluginSDK for vs2022
-      working-directory: ${{runner.temp}}/pluginsdk/tools/generate
-      run: "cmd \"Visual Studio 2022.bat\""
-
-    - name: Run ls
-      working-directory: ${{runner.temp}}/pluginsdk
-      run: ls
+      run: ${{runner.temp}}/pluginsdk/tools/premake/premake5.exe vs2022 --file="${{runner.temp}}/pluginsdk/tools/premake/premake5.lua"
 
     - name: Build PluginSDK
       working-directory: ${{runner.temp}}/pluginsdk
