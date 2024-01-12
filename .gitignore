@@ -37,7 +37,3 @@
 
 # Clangd project configuration file
 .clangd
-
-# Plugin file
-*.asi
-GPSLine/bin/SA.GPS.CONF.ini
