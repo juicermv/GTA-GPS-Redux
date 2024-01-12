@@ -37,16 +37,16 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: DK22Pac/plugin-sdk
-        path: ${{env.RUNNER_TEMP}}/pluginsdk/
+        path: ${{env.GITHUB_WORKFLOW}}/pluginsdk/
 
     - name: Set PluginSDK dir path
-      run: set PLUGIN_SDL_DIR=${{env.RUNNER_TEMP}}/pluginsdk/
+      run: set PLUGIN_SDL_DIR=${{env.GITHUB_WORKFLOW}}/pluginsdk/
 
     - name: Generate PluginSDK for vs2022
       run: "./${{env.RUNNER_TEMP}}/pluginsdk/tools/generate/Visual Studio 2022.bat"
 
     - name: Build PluginSDK
-      working-directory: ${{env.RUNNER_TEMP}}/pluginsdk/
+      working-directory: ${{env.GITHUB_WORKFLOW}}/pluginsdk/
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=Release plugin.sln
