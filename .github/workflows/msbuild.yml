@@ -33,23 +33,15 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
 
-    - name: Clone PluginSDK
-      run: git clone https://github.com/DK22Pac/plugin-sdk ${{runner.temp}}/pluginsdk
-
-    - name: Set PLUGIN_SDK_DIR
-      run: $env:PLUGIN_SDK_DIR="${{runner.temp}}/pluginsdk"
-
     - name: Set GitHub PLUGIN_SDK_DIR
       run: echo "PLUGIN_SDK_DIR=${{runner.temp}}/pluginsdk" | Out-File -FilePath $env:GITHUB_ENV
 
-    - name: Generate PluginSDK for vs2022
-      run: ${{runner.temp}}/pluginsdk/tools/premake/premake5.exe vs2022 --file="${{runner.temp}}/pluginsdk/tools/premake/premake5.lua"
-
-    - name: Build PluginSDK
-      working-directory: ${{runner.temp}}/pluginsdk
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=Release /property:Platform=Win32 plugin_sa/plugin_sa.vcxproj
+    - name: Download latest PluginSDK artifact
+      uses: actions/download-artifact@v4
+      with:
+        github-token: ${{github.token}}
+        repository: juicermv/plugin-sdk
+        path: ${{runner.temp}}/pluginsdk
 
     - name: Build plugin
       working-directory: ${{env.GITHUB_WORKFLOW}}
