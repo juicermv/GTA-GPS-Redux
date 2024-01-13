@@ -39,7 +39,7 @@ jobs:
     - name: Download latest PluginSDK artifact
       uses: actions/download-artifact@v4
       with:
-        github-token: ${{github.token}}
+        github-token: "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"
         repository: juicermv/plugin-sdk
         path: ${{runner.temp}}/pluginsdk
 
