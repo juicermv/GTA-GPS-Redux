@@ -20,6 +20,8 @@ env:
   # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
   BUILD_CONFIGURATION: GitHub
 
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 permissions:
   contents: read
 
@@ -36,13 +38,13 @@ jobs:
     - name: Set GitHub PLUGIN_SDK_DIR
       run: echo "PLUGIN_SDK_DIR=${{runner.temp}}/pluginsdk" | Out-File -FilePath $env:GITHUB_ENV
 
-    - name: Download latest PluginSDK artifact
-      uses: actions/download-artifact@v4
-      with:
-        github-token: "11AIJFHBY0HErOaiLR70Nn_x5U3T0jYpKDKftpbk74I00B8JuhpO6YAr0eho8OO1RKBZZIYY5DmePsQLih"
-        repository: juicermv/plugin-sdk
-        path: ${{runner.temp}}/pluginsdk
-
+    - name: Download latest PluginSDK build
+      run: gh release download -R juicermv/plugin-sdk -p '*.zip' --dir "${{runner.temp}}"
+      
+    - name: Extract downloaded build
+      working-directory: ${{runner.temp}}
+      run: 7z x release.zip -y -o${{runner.temp}}/pluginsdk
+    
     - name: Build plugin
       working-directory: ${{env.GITHUB_WORKFLOW}}
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
