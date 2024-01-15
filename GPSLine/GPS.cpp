@@ -592,9 +592,11 @@ void GPS::GameEventHandle() {
         }
         else
         {
-            mTrace = CRadar::ms_RadarTrace[i];
-            renderMissionRoute = true;
-            break;
+            if (mTrace.m_nBlipDisplay > 1) {
+                mTrace = CRadar::ms_RadarTrace[i];
+                renderMissionRoute = true;
+                break;
+            }
         }
     }
 
