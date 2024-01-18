@@ -580,8 +580,7 @@ void GPS::DrawRadarOverlayHandle() {
 
 
 void GPS::GameEventHandle() {
-    if (!NavEnabled(FindPlayerPed(0)))
-        renderMissionRoute = false; return;
+    
 
     this->UpdatePlayerPos();
 
@@ -592,12 +591,17 @@ void GPS::GameEventHandle() {
         }
         else
         {
-            if (mTrace.m_nBlipDisplay > 1) {
+            if (mTrace.m_nBlipDisplay > 1 && mTrace.m_bInUse) {
                 mTrace = CRadar::ms_RadarTrace[i];
                 renderMissionRoute = true;
                 break;
             }
         }
+    }
+
+    if (!NavEnabled(FindPlayerPed(0))) {
+        renderMissionRoute = false;
+        return;
     }
 
     try {
