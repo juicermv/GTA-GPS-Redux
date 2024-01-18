@@ -581,7 +581,7 @@ void GPS::DrawRadarOverlayHandle() {
 
 void GPS::GameEventHandle() {
     if (!NavEnabled(FindPlayerPed(0)))
-        return;
+        renderMissionRoute = false; return;
 
     this->UpdatePlayerPos();
 
