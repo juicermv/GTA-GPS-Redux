@@ -1,4 +1,4 @@
-# GTA SA GPS Reudx
+# GTA SA GPS Redux
 
 This is a fork of the fixed GPS version by JuniorDjjr. It includes automatic navigation for mission markers.
 If you'd like to contribute, go ahead.
