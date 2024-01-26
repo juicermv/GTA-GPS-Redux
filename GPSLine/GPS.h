@@ -114,9 +114,17 @@ private:
 
     CVector targetTracePos;
 
-    tRadarTrace mTrace;
+    tRadarTrace *mTrace;
 
     CRGBA CurrentColor;
+
+
+    // Graphics stuff
+    CVector2D GPS::tmpNodePoints[MAX_NODE_POINTS];
+    CVector2D GPS::targetScreen;
+    CVector2D GPS::tmpPoint;
+    CVector2D GPS::dir;
+    float angle;
 
 #ifdef SAMP
     static LPVOID WINAPI init(LPVOID* lpParam);
@@ -156,7 +164,7 @@ private:
         RwIm2DVertex* lineVerts
     );
 
-    void renderMissionTrace(tRadarTrace trace);
+    void renderMissionTrace(tRadarTrace *trace);
 
 public:
     GPS();

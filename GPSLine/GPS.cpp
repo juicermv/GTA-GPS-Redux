@@ -97,6 +97,19 @@ void GPS::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr) {
     vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, clr.a);
 }
 
+void restrictdraw() {
+    RECT rect;
+    CVector2D posn;
+    CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(-1.0f, -1.0f));
+    rect.left = static_cast<LONG>(posn.x + 2.0f);
+    rect.bottom = static_cast<LONG>(posn.y - 2.0f);
+    CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(1.0f, 1.0f));
+    rect.right = static_cast<LONG>(posn.x - 2.0f);
+    rect.top = static_cast<LONG>(posn.y + 2.0f);
+    GetD3DDevice<IDirect3DDevice9>()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+    GetD3DDevice<IDirect3DDevice9>()->SetScissorRect(&rect);
+}
+
 void GPS::renderPath(
     CVector tracePos, 
     short color, 
@@ -111,22 +124,19 @@ void GPS::renderPath(
         return;
     }
 
-    CVector2D nodePoints[MAX_NODE_POINTS];
-
     for (unsigned short i = 0; i < nodesCount; i++) {
         CPathNode* currentNode = ThePaths.GetPathNode(resultNodes[i]);
         CVector nodePosn = currentNode->GetNodeCoors();
 
-        CVector2D tmpPoint;
         CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, CVector2D(nodePosn.x, nodePosn.y));
         if (!FrontEndMenuManager.m_bDrawRadarOrMap)
-            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
+            CRadar::TransformRadarPointToScreenSpace(tmpNodePoints[i], tmpPoint);
         else {
             CRadar::LimitRadarPoint(tmpPoint);
-            CRadar::TransformRadarPointToScreenSpace(nodePoints[i], tmpPoint);
-            nodePoints[i].x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
-            nodePoints[i].y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
-            CRadar::LimitToMap(&nodePoints[i].x, &nodePoints[i].y);
+            CRadar::TransformRadarPointToScreenSpace(tmpNodePoints[i], tmpPoint);
+            tmpNodePoints[i].x *= static_cast<float>(RsGlobal.maximumWidth) / 640.0f;
+            tmpNodePoints[i].y *= static_cast<float>(RsGlobal.maximumHeight) / 448.0f;
+            CRadar::LimitToMap(&tmpNodePoints[i].x, &tmpNodePoints[i].y);
         }
     }
 
@@ -137,16 +147,7 @@ void GPS::renderPath(
         && reinterpret_cast<D3DCAPS9 const*>(RwD3D9GetCaps())->RasterCaps & D3DPRASTERCAPS_SCISSORTEST
     )
     {
-        RECT rect;
-        CVector2D posn;
-        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(-1.0f, -1.0f));
-        rect.left = static_cast<LONG>(posn.x + 2.0f);
-        rect.bottom = static_cast<LONG>(posn.y - 2.0f);
-        CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(1.0f, 1.0f));
-        rect.right = static_cast<LONG>(posn.x - 2.0f);
-        rect.top = static_cast<LONG>(posn.y + 2.0f);
-        GetD3DDevice<IDirect3DDevice9>()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
-        GetD3DDevice<IDirect3DDevice9>()->SetScissorRect(&rect);
+        restrictdraw();
     }
 
     RwRenderStateSet(rwRENDERSTATETEXTURERASTER, NULL);
@@ -160,7 +161,7 @@ void GPS::renderPath(
         vColor = this->SetupColor(color, friendly);
         
         // TODO: Move this (shift calculation) into a function.
-        CVector2D dir = nodePoints[i + 1] - nodePoints[i]; // Direction between current node to next node
+        CVector2D dir = tmpNodePoints[i + 1] - tmpNodePoints[i]; // Direction between current node to next node
         float angle = atan2(dir.y, dir.x); // Convert direction to angle
 
         if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
@@ -185,29 +186,29 @@ void GPS::renderPath(
 
         this->Setup2dVertex(                //
             lineVerts[vertIndex + 0],       //
-            nodePoints[i].x + shift[0].x,   // CurrentNode*
-            nodePoints[i].y + shift[0].y,   //
+            tmpNodePoints[i].x + shift[0].x,   // CurrentNode*
+            tmpNodePoints[i].y + shift[0].y,   //
             vColor
         );
 
         this->Setup2dVertex(                //
             lineVerts[vertIndex + 1],       //
-            nodePoints[i].x + shift[1].x,   // CurrentNode - CurrentNode*
-            nodePoints[i].y + shift[1].y,   //
+            tmpNodePoints[i].x + shift[1].x,   // CurrentNode - CurrentNode*
+            tmpNodePoints[i].y + shift[1].y,   //
             vColor
         );
 
         this->Setup2dVertex(                    // NextNode*
             lineVerts[vertIndex + 2],           //    |
-            nodePoints[i + 1].x + shift[0].x,   // CurrentNode - CurrentNode
-            nodePoints[i + 1].y + shift[0].y,   //
+            tmpNodePoints[i + 1].x + shift[0].x,   // CurrentNode - CurrentNode
+            tmpNodePoints[i + 1].y + shift[0].y,   //
             vColor
         );
 
         this->Setup2dVertex(
             lineVerts[vertIndex + 3],           // NextNode - NextNode*
-            nodePoints[i + 1].x + shift[1].x,   //    |             |
-            nodePoints[i + 1].y + shift[1].y,   // CurrentNode - CurrentNode
+            tmpNodePoints[i + 1].x + shift[1].x,   //    |             |
+            tmpNodePoints[i + 1].y + shift[1].y,   // CurrentNode - CurrentNode
             vColor
         );
         
@@ -216,8 +217,7 @@ void GPS::renderPath(
     }
     
     // Create end segment
-    CVector2D targetScreen;
-    CVector2D tmpPoint;
+
     CRadar::TransformRealWorldPointToRadarSpace(tmpPoint, tracePos);
     if (!FrontEndMenuManager.m_bDrawRadarOrMap)
         CRadar::TransformRadarPointToScreenSpace(targetScreen, tmpPoint);
@@ -229,8 +229,8 @@ void GPS::renderPath(
         CRadar::LimitToMap(&targetScreen.x, &targetScreen.y);
     }
 
-    CVector2D dir = targetScreen - nodePoints[lasti]; // Direction between last node and the target position
-    float angle = atan2(dir.y, dir.x); // Convert direction to angle
+    dir = targetScreen - tmpNodePoints[lasti]; // Direction between last node and the target position
+    angle = atan2(dir.y, dir.x); // Convert direction to angle
 
     if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
         // 1.5707963 radians = 90 degrees
@@ -257,36 +257,36 @@ void GPS::renderPath(
 
     this->Setup2dVertex(
         lineVerts[vertIndex+0],
-        nodePoints[lasti].x + shift[0].x,
-        nodePoints[lasti].y + shift[0].y,
+        tmpNodePoints[lasti].x + shift[0].x,
+        tmpNodePoints[lasti].y + shift[0].y,
         vColor
     );
 
     this->Setup2dVertex(
         lineVerts[vertIndex+1],
-        nodePoints[lasti].x + shift[1].x,
-        nodePoints[lasti].y + shift[1].y,
+        tmpNodePoints[lasti].x + shift[1].x,
+        tmpNodePoints[lasti].y + shift[1].y,
         vColor
     );
 
     this->Setup2dVertex(
         lineVerts[vertIndex + 2],
-        (nodePoints[lasti].x + (dir.x / 4.8)) + (shift[0].x / 2),
-        (nodePoints[lasti].y + (dir.y / 4.8)) + (shift[0].y / 2),
+        (tmpNodePoints[lasti].x + (dir.x / 4.8)) + (shift[0].x / 2),
+        (tmpNodePoints[lasti].y + (dir.y / 4.8)) + (shift[0].y / 2),
         vColor
     );
 
     this->Setup2dVertex(
         lineVerts[vertIndex + 3],
-        (nodePoints[lasti].x + (dir.x / 4.8)) + (shift[1].x / 2),
-        (nodePoints[lasti].y + (dir.y / 4.8)) + (shift[1].y / 2),
+        (tmpNodePoints[lasti].x + (dir.x / 4.8)) + (shift[1].x / 2),
+        (tmpNodePoints[lasti].y + (dir.y / 4.8)) + (shift[1].y / 2),
         vColor
     );
 
     this->Setup2dVertex(
         lineVerts[vertIndex + 4],
-        (nodePoints[lasti].x + (dir.x / 4.5)),
-        (nodePoints[lasti].y + (dir.y / 4.5)),
+        (tmpNodePoints[lasti].x + (dir.x / 4.5)),
+        (tmpNodePoints[lasti].y + (dir.y / 4.5)),
         vColor
     );
 
@@ -418,24 +418,38 @@ GPS::~GPS() {
     #endif
 }
 
-void GPS::renderMissionTrace(tRadarTrace trace) {
+void GPS::renderMissionTrace(tRadarTrace *trace) {
     //this->Log("Found mission objective blip.");
+    if (!trace)
+        return;
 
-    switch (trace.m_nBlipType) {
+    if (trace->m_nBlipDisplay < 2)
+    {
+        renderMissionRoute = false;
+        return;
+    }
+
+    switch (trace->m_nBlipType) {
     case 1:
-        if (cfg.ENABLE_MOVING)
-            destVec = CPools::GetVehicle(trace.m_nEntityHandle)->GetPosition();
-        else
-            renderMissionRoute = false; return;
+        if (cfg.ENABLE_MOVING) {
+            destVec = CPools::GetVehicle(trace->m_nEntityHandle)->GetPosition();
+        }
+        else {
+            renderMissionRoute = false; 
+            return;
+        }
         break;
     case 2:
-        if (cfg.ENABLE_MOVING)
-            destVec = CPools::GetPed(trace.m_nEntityHandle)->GetPosition();
-        else
-            renderMissionRoute = false; return;
+        if (cfg.ENABLE_MOVING) {
+            destVec = CPools::GetPed(trace->m_nEntityHandle)->GetPosition();
+        }
+        else {
+            renderMissionRoute = false; 
+            return;
+        }
         break;
     case 3:
-        destVec = CPools::GetObject(trace.m_nEntityHandle)->GetPosition();
+        destVec = CPools::GetObject(trace->m_nEntityHandle)->GetPosition();
         break;
     case 6: // Searchlights
     case 8: // Airstripts
@@ -445,13 +459,13 @@ void GPS::renderMissionTrace(tRadarTrace trace) {
         //this->Log("Pickup detected. Not providing GPS navigation!");
         return;
     default:
-        destVec = trace.m_vecPos;
+        destVec = trace->m_vecPos;
         break;
     }
 
     //this->Log("DestVec: " + std::to_string(destVec.x) + ", " + std::to_string(destVec.y));
     this->calculatePath(destVec, missionNodesCount, m_ResultNodes, missionDistance);
-    this->renderPath(destVec, trace.m_nColour, trace.m_bFriendly, missionNodesCount, m_ResultNodes, missionDistance, m_LineVerts);
+    this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes, missionDistance, m_LineVerts);
 }
 
 void GPS::Log(std::string val) {
@@ -580,40 +594,28 @@ void GPS::DrawRadarOverlayHandle() {
 
 
 void GPS::GameEventHandle() {
-    
-
     this->UpdatePlayerPos();
 
-    // Verify that blip still exists
-    for (int i = 0; i < 175; i++) {
-        if (CRadar::ms_RadarTrace[i].m_nEntityHandle != mTrace.m_nEntityHandle) {
+    renderTargetRoute = FrontEndMenuManager.m_nTargetBlipIndex == 0 ? false : true;
+
+
+    if (!mTrace)
+        renderMissionRoute = false;
+    else {
+        renderMissionRoute = mTrace->m_bInUse;
+        if (mTrace->m_nBlipDisplay < 2 || DistanceBetweenPoints(this->PlayerPos, mTrace->m_vecPos) <= cfg.DISABLE_PROXIMITY)
+        {
             renderMissionRoute = false;
         }
-        else
-        {
-            if (mTrace.m_nBlipDisplay > 1 && mTrace.m_bInUse) {
-                mTrace = CRadar::ms_RadarTrace[i];
-                renderMissionRoute = true;
-                break;
-            }
-        }
     }
+
+    
+
+    
 
     if (!NavEnabled(FindPlayerPed(0))) {
         renderMissionRoute = false;
         return;
-    }
-
-    try {
-        if (mTrace.m_nBlipDisplay <= 1 || DistanceBetweenPoints(this->PlayerPos, mTrace.m_vecPos) <= cfg.DISABLE_PROXIMITY)
-        {
-            renderMissionRoute = false;
-        }
-    }
-    catch (const std::exception& e)
-    {
-        Log(e.what());
-        renderMissionRoute = false;
     }
 
     if (FrontEndMenuManager.m_nTargetBlipIndex
@@ -637,22 +639,19 @@ void GPS::GameEventHandle() {
         this->calculatePath(targetTracePos, targetNodesCount, t_ResultNodes, targetDistance);
         renderTargetRoute = true;
     }
-    
-    
-    if(FrontEndMenuManager.m_nTargetBlipIndex == 0) {
-        renderTargetRoute = false;
-    }
 
     try {
         if (CTheScripts::IsPlayerOnAMission()) {
             for (int i = 0; i < 175; i++) {
-                tRadarTrace trace = CRadar::ms_RadarTrace[i];
-                if (trace.m_nRadarSprite == 0
-                    && trace.m_nBlipDisplay > 1
-                    ) {
-                    mTrace = trace;
-                    renderMissionRoute = true;
-                    break;
+                tRadarTrace *trace = &CRadar::ms_RadarTrace[i];
+                if (trace) {
+                    if (trace->m_nRadarSprite == 0
+                        && trace->m_nBlipDisplay > 1
+                        ) {
+                        mTrace = trace;
+                        renderMissionRoute = true;
+                        break;
+                    }
                 }
             }
         }
