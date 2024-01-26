@@ -45,19 +45,11 @@ void ExtractColorFromString(std::string in, CRGBA &out) {
 
 struct Config {
     // Config values
-    float GPS_LINE_WIDTH ;
-    float DISABLE_PROXIMITY ;
-    bool ENABLE_BMX ;
-    bool ENABLE_MOVING ;
-    bool ENABLE_WATER_GPS ;
-
-    bool RESPECT_LANE_DIRECTION ;
-
-    bool ENABLE_DISTANCE_TEXT ;
-    bool DISTANCE_UNITS ;
+    float GPS_LINE_WIDTH, DISABLE_PROXIMITY = 0.0f;
+    bool ENABLE_BMX, ENABLE_MOVING, ENABLE_WATER_GPS, RESPECT_LANE_DIRECTION, ENABLE_DISTANCE_TEXT, DISTANCE_UNITS = 0;
 
     // Custom Colors config
-    bool ENABLE_CUSTOM_CLRS ;
+    bool ENABLE_CUSTOM_CLRS = 0;
     CRGBA
         CC_RED,
         CC_GREEN,
@@ -70,42 +62,44 @@ struct Config {
 
     CRGBA GPS_LINE_CLR = { 180, 24 ,24 ,255 };
 
-    bool LOGFILE_ENABLED ;
+    bool LOGFILE_ENABLED = 0;
 
-    static void LoadConfig(const char* filename, Config &config);
+    Config(const char* filename);
 };
 
-void Config::LoadConfig(const char* filename, Config &config) {
+Config::Config(const char* filename) {
     mINI::INIFile file(filename);
 
     mINI::INIStructure ini;
     file.read(ini);
 
     /* Navigation */
-    config.RESPECT_LANE_DIRECTION = (bool)std::stoi(ini["Navigation"]["respectTrafficLaneDirection"]);
-    config.GPS_LINE_WIDTH = std::stof(ini["Navigation"]["lineWidth"]);
-    config.ENABLE_BMX = (bool)std::stoi(ini["Navigation"]["enableOnBicycles"]);
-    config.ENABLE_WATER_GPS = (bool)std::stoi(ini["Navigation"]["enableOnBoats"]);
-    config.ENABLE_MOVING = (bool)std::stoi(ini["Navigation"]["trackMovingTargets"]);
-    config.DISABLE_PROXIMITY = std::stof(ini["Navigation"]["removeRadius"]);
+    RESPECT_LANE_DIRECTION = static_cast<bool>(std::atoi(ini["Navigation"]["respectTrafficLaneDirection"].c_str()));
+    GPS_LINE_WIDTH = static_cast<float>(std::atof(ini["Navigation"]["lineWidth"].c_str()));
+    ENABLE_BMX = static_cast<bool>(std::atoi(ini["Navigation"]["enableOnBicycles"].c_str()));
+    ENABLE_WATER_GPS = static_cast<bool>(std::atoi(ini["Navigation"]["enableOnBoats"].c_str()));
+    ENABLE_MOVING = static_cast<bool>(std::atoi(ini["Navigation"]["trackMovingTargets"].c_str()));
+    DISABLE_PROXIMITY = static_cast<float>(std::atof(ini["Navigation"]["removeRadius"].c_str()));
 
     /* Extras */
-    config.ENABLE_DISTANCE_TEXT = (bool)std::stoi(ini["Navigation"]["displayDistance"]);
-    config.DISTANCE_UNITS = (bool)std::stoi(ini["Navigation"]["distanceUnits"]);
+    ENABLE_DISTANCE_TEXT = static_cast<bool>(std::atoi(ini["Extras"]["displayDistance"].c_str()));
+    DISTANCE_UNITS = static_cast<bool>(std::atoi(ini["Extras"]["distanceUnits"].c_str()));
 
     /* Custom Colors */
-    config.ENABLE_CUSTOM_CLRS = (bool)std::stoi(ini["Custom Colors"]["enabled"]);
-    if (config.ENABLE_CUSTOM_CLRS) {
-        ExtractColorFromString(ini["Custom Colors"]["waypoint"], config.GPS_LINE_CLR);
-        ExtractColorFromString(ini["Custom Colors"]["red"], config.CC_RED);
-        ExtractColorFromString(ini["Custom Colors"]["green"], config.CC_GREEN);
-        ExtractColorFromString(ini["Custom Colors"]["blue"], config.CC_BLUE);
-        ExtractColorFromString(ini["Custom Colors"]["white"], config.CC_WHITE);
-        ExtractColorFromString(ini["Custom Colors"]["yellow"], config.CC_YELLOW);
-        ExtractColorFromString(ini["Custom Colors"]["purple"], config.CC_PURPLE);
-        ExtractColorFromString(ini["Custom Colors"]["cyan"], config.CC_CYAN);
+    ENABLE_CUSTOM_CLRS = static_cast<bool>(std::atoi(ini["Custom Colors"]["enabled"].c_str()));
+    if (ENABLE_CUSTOM_CLRS) {
+        ExtractColorFromString(ini["Custom Colors"]["waypoint"], GPS_LINE_CLR);
+        ExtractColorFromString(ini["Custom Colors"]["red"], CC_RED);
+        ExtractColorFromString(ini["Custom Colors"]["green"], CC_GREEN);
+        ExtractColorFromString(ini["Custom Colors"]["blue"], CC_BLUE);
+        ExtractColorFromString(ini["Custom Colors"]["white"], CC_WHITE);
+        ExtractColorFromString(ini["Custom Colors"]["yellow"], CC_YELLOW);
+        ExtractColorFromString(ini["Custom Colors"]["purple"], CC_PURPLE);
+        ExtractColorFromString(ini["Custom Colors"]["cyan"], CC_CYAN);
     }
 
     /* Log */
-    config.LOGFILE_ENABLED = (bool)std::stoi(ini["Misc"]["enableLog"]);
+    LOGFILE_ENABLED = static_cast<bool>(std::atoi(ini["Misc"]["enableLog"].c_str()));
+
+    file.write(ini);
 }

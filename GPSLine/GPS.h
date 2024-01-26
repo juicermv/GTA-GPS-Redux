@@ -75,7 +75,7 @@ private:
 #endif
 
     // Config
-    Config cfg;
+    Config* cfg = nullptr;
 
     //Logging stuff
     unsigned short logLines;

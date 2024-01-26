@@ -30,47 +30,47 @@ void GPS::calculatePath(
         (
             FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT
             && FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Respect rules of traffic. (only if in valid vehicle & enabled in config)
-            && cfg.RESPECT_LANE_DIRECTION
+            && cfg->RESPECT_LANE_DIRECTION
             ),
         CNodeAddress(),
-        true,
-        (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && cfg.ENABLE_WATER_GPS) // Whether to do water navigation
+        false,
+        (FindPlayerPed(0)->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT && cfg->ENABLE_WATER_GPS) // Whether to do water navigation
     );
 }
 
 CRGBA GPS::SetupColor(short color, bool friendly) {
     CRGBA clr;
 
-    if (cfg.ENABLE_CUSTOM_CLRS)
+    if (cfg->ENABLE_CUSTOM_CLRS)
     {
         switch (color)
         {
         case 0: // RED
-            clr = cfg.CC_RED; break;
+            clr = cfg->CC_RED; break;
         case 1: // GREEN
-            clr = cfg.CC_GREEN; break;
+            clr = cfg->CC_GREEN; break;
         case 2: // BLUE
-            clr = cfg.CC_BLUE; break;
+            clr = cfg->CC_BLUE; break;
         case 3: // WHITE
-            clr = cfg.CC_WHITE; break;
+            clr = cfg->CC_WHITE; break;
         case 4: // YELLOW
-            clr = cfg.CC_YELLOW; break;
+            clr = cfg->CC_YELLOW; break;
         case 5: // PURPLE
-            clr = cfg.CC_PURPLE; break;
+            clr = cfg->CC_PURPLE; break;
         case 6: // CYAN
-            clr = cfg.CC_CYAN; break;
+            clr = cfg->CC_CYAN; break;
         case 7: // Depends on whether blip is friendly.
             if (friendly) {
                 // BLUE
-                clr = cfg.CC_BLUE;
+                clr = cfg->CC_BLUE;
             }
             else {
                 // RED
-                clr = cfg.CC_RED;
+                clr = cfg->CC_RED;
             }
             break;
         case 8: // DESTINATION
-            clr = cfg.CC_YELLOW;
+            clr = cfg->CC_YELLOW;
             break;
         }
     }
@@ -78,7 +78,7 @@ CRGBA GPS::SetupColor(short color, bool friendly) {
 
     if (color < 1 || color > 8)
     {
-        clr = cfg.GPS_LINE_CLR;
+        clr = cfg->GPS_LINE_CLR;
     }
     else {
         this->CurrentColor = clr;
@@ -166,10 +166,10 @@ void GPS::renderPath(
 
         if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
             // 1.5707963 radians = 90 degrees
-            shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
-            shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
-            shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
-            shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
+            shift[0].x = cosf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH;
+            shift[0].y = sinf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH;
+            shift[1].x = cosf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH;
+            shift[1].y = sinf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH;
         }
         else {
             float mp = FrontEndMenuManager.m_fMapZoom - 140.0f;
@@ -178,10 +178,10 @@ void GPS::renderPath(
             else if (mp > 960.0f)
                 mp = 960.0f;
             mp = mp / 960.0f + 0.4f;
-            shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
-            shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
-            shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
-            shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+            shift[0].x = cosf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
+            shift[0].y = sinf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
+            shift[1].x = cosf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
+            shift[1].y = sinf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
         }
 
         this->Setup2dVertex(                //
@@ -235,10 +235,10 @@ void GPS::renderPath(
     if (!FrontEndMenuManager.m_bDrawRadarOrMap) {
         // 1.5707963 radians = 90 degrees
 
-        shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
-        shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH;
-        shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
-        shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH;
+        shift[0].x = cosf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH;
+        shift[0].y = sinf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH;
+        shift[1].x = cosf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH;
+        shift[1].y = sinf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH;
     }
     else {
         float mp = FrontEndMenuManager.m_fMapZoom - 140.0f;
@@ -247,10 +247,10 @@ void GPS::renderPath(
         else if (mp > 960.0f)
             mp = 960.0f;
         mp = mp / 960.0f + 0.4f;
-        shift[0].x = cosf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
-        shift[0].y = sinf(angle - 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
-        shift[1].y = sinf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
-        shift[1].x = cosf(angle + 1.5707963f) * cfg.GPS_LINE_WIDTH * mp;
+        shift[0].x = cosf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
+        shift[0].y = sinf(angle - 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
+        shift[1].y = sinf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
+        shift[1].x = cosf(angle + 1.5707963f) * cfg->GPS_LINE_WIDTH * mp;
     }
 
     //this->Log("DIR: " + std::to_string(dir.x) + ", " + std::to_string(dir.y));
@@ -306,7 +306,7 @@ void GPS::renderPath(
 
 // Check whether on BMX, will always return false if bmx support is enabled.
 bool GPS::CheckBMX(CPed* player) {
-    if (this->cfg.ENABLE_BMX)
+    if (this->cfg->ENABLE_BMX)
         return false;
     
     return player->m_pVehicle->m_nVehicleSubClass == VEHICLE_BMX;
@@ -315,14 +315,11 @@ bool GPS::CheckBMX(CPed* player) {
 
 
 void GPS::Run() {
-    // Logging stuff
-    if(cfg.LOGFILE_ENABLED)
+    cfg = new Config("SA.GPS.CONF.ini");
+
+
+    if(cfg->LOGFILE_ENABLED)
         this->logfile.open("SA.GPS.LOG.txt", std::ios::out);
-
-    // Load config values from file.
-    Config::LoadConfig("SA.GPS.CONF.ini", this->cfg);
-
-    // Parse custom colors
 
     for (short i = 0; i < 1024; i++) {
         pathNodesToStream[i] = 1;
@@ -409,7 +406,10 @@ GPS::GPS() {
 
 
 GPS::~GPS() {
-    if(cfg.LOGFILE_ENABLED)
+    delete mTrace;
+    delete cfg;
+
+    if(cfg->LOGFILE_ENABLED)
         this->logfile.close();
 
     #ifdef SAMP
@@ -431,7 +431,7 @@ void GPS::renderMissionTrace(tRadarTrace *trace) {
 
     switch (trace->m_nBlipType) {
     case 1:
-        if (cfg.ENABLE_MOVING) {
+        if (cfg->ENABLE_MOVING) {
             destVec = CPools::GetVehicle(trace->m_nEntityHandle)->GetPosition();
         }
         else {
@@ -440,7 +440,7 @@ void GPS::renderMissionTrace(tRadarTrace *trace) {
         }
         break;
     case 2:
-        if (cfg.ENABLE_MOVING) {
+        if (cfg->ENABLE_MOVING) {
             destVec = CPools::GetPed(trace->m_nEntityHandle)->GetPosition();
         }
         else {
@@ -469,7 +469,7 @@ void GPS::renderMissionTrace(tRadarTrace *trace) {
 }
 
 void GPS::Log(std::string val) {
-    if (!cfg.LOGFILE_ENABLED)
+    if (!cfg->LOGFILE_ENABLED)
         return;
 
     if (this->logLines < 2048) {
@@ -550,7 +550,7 @@ void GPS::DrawRadarOverlayHandle() {
                 (
                     trace.m_nRadarSprite == 0
                     && trace.m_nBlipDisplay > 1
-                    && DistanceBetweenPoints(this->PlayerPos, trace.m_vecPos) > cfg.DISABLE_PROXIMITY
+                    && DistanceBetweenPoints(this->PlayerPos, trace.m_vecPos) > cfg->DISABLE_PROXIMITY
                     )
             {
                 this->Log("Found contender.");
@@ -598,20 +598,18 @@ void GPS::GameEventHandle() {
 
     renderTargetRoute = FrontEndMenuManager.m_nTargetBlipIndex == 0 ? false : true;
 
-
     if (!mTrace)
         renderMissionRoute = false;
     else {
         renderMissionRoute = mTrace->m_bInUse;
-        if (mTrace->m_nBlipDisplay < 2 || DistanceBetweenPoints(this->PlayerPos, mTrace->m_vecPos) <= cfg.DISABLE_PROXIMITY)
+        if (mTrace->m_nBlipDisplay < 2 || DistanceBetweenPoints(this->PlayerPos, mTrace->m_vecPos) <= cfg->DISABLE_PROXIMITY)
         {
             renderMissionRoute = false;
         }
+
+        if (!renderMissionRoute)
+            mTrace = nullptr;
     }
-
-    
-
-    
 
     if (!NavEnabled(FindPlayerPed(0))) {
         renderMissionRoute = false;
@@ -622,7 +620,7 @@ void GPS::GameEventHandle() {
         && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter == HIWORD(FrontEndMenuManager.m_nTargetBlipIndex)
         && CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay
         && DistanceBetweenPoints(CVector2D(this->PlayerPos),
-            CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= cfg.DISABLE_PROXIMITY
+            CVector2D(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)) <= cfg->DISABLE_PROXIMITY
     )
     {
         CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
@@ -692,7 +690,7 @@ std::string makeDist(float dist, short units) {
 }
 
 void GPS::DrawHudEventHandle() {
-    if (!cfg.ENABLE_DISTANCE_TEXT)
+    if (!cfg->ENABLE_DISTANCE_TEXT)
         return;
 
     if (!NavEnabled(FindPlayerPed(0)))
@@ -720,7 +718,7 @@ void GPS::DrawHudEventHandle() {
                     FindPlayerCoors(0), 
                     destVec
                 ), 
-                cfg.DISTANCE_UNITS
+                cfg->DISTANCE_UNITS
             ).c_str()
         );
     }
@@ -728,7 +726,7 @@ void GPS::DrawHudEventHandle() {
     if (renderTargetRoute) {
 
         CFont::SetOrientation(ALIGN_CENTER);
-        CFont::SetColor(cfg.GPS_LINE_CLR);
+        CFont::SetColor(cfg->GPS_LINE_CLR);
 
         CFont::SetBackground(false, false);
         CFont::SetWrapx(500.0f);
@@ -757,7 +755,7 @@ void GPS::DrawHudEventHandle() {
                         ].m_vecPos
                     )
                 ),
-                cfg.DISTANCE_UNITS
+                cfg->DISTANCE_UNITS
             ).c_str()
         );
     }
