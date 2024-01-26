@@ -32,8 +32,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Init submodules
-      run: git submodule init
+    - name: Init & Update submodules
+      run: git submodule init && git submodule update
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
