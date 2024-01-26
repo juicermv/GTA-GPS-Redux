@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "inipp.h"
+#include "../external/mini/src/mini/ini.h"
 #include <CRGBA.h>
 
 
@@ -45,23 +45,19 @@ void ExtractColorFromString(std::string in, CRGBA &out) {
 
 struct Config {
     // Config values
-    float GPS_LINE_WIDTH = -1;
-    short GPS_LINE_R = -1;
-    short GPS_LINE_G = -1;
-    short GPS_LINE_B = -1;
-    short GPS_LINE_A = -1;
-    float DISABLE_PROXIMITY = -1;
-    bool ENABLE_BMX = -1;
-    bool ENABLE_MOVING = -1;
-    bool ENABLE_WATER_GPS = -1;
+    float GPS_LINE_WIDTH ;
+    float DISABLE_PROXIMITY ;
+    bool ENABLE_BMX ;
+    bool ENABLE_MOVING ;
+    bool ENABLE_WATER_GPS ;
 
-    bool RESPECT_LANE_DIRECTION = -1;
+    bool RESPECT_LANE_DIRECTION ;
 
-    bool ENABLE_DISTANCE_TEXT = -1;
-    short DISTANCE_UNITS = -1;
+    bool ENABLE_DISTANCE_TEXT ;
+    bool DISTANCE_UNITS ;
 
     // Custom Colors config
-    bool ENABLE_CUSTOM_CLRS = -1;
+    bool ENABLE_CUSTOM_CLRS ;
     CRGBA
         CC_RED,
         CC_GREEN,
@@ -72,62 +68,44 @@ struct Config {
         CC_CYAN
     ;
 
-    bool LOGFILE_ENABLED = -1;
+    CRGBA GPS_LINE_CLR = { 180, 24 ,24 ,255 };
+
+    bool LOGFILE_ENABLED ;
 
     static void LoadConfig(const char* filename, Config &config);
 };
 
 void Config::LoadConfig(const char* filename, Config &config) {
-    inipp::Ini<char> iniParser;
-    std::ifstream iniFile = std::ifstream(filename, std::ios::in);
+    mINI::INIFile file(filename);
 
-    iniParser.parse(iniFile);
-    iniParser.strip_trailing_comments();
-    iniParser.interpolate();
+    mINI::INIStructure ini;
+    file.read(ini);
 
-    inipp::get_value(iniParser.sections["Navigation"], "respectTrafficLaneDirection", config.RESPECT_LANE_DIRECTION);
-    inipp::get_value(iniParser.sections["Navigation"], "lineWidth", config.GPS_LINE_WIDTH);
-    inipp::get_value(iniParser.sections["Navigation"], "enableOnBicycles", config.ENABLE_BMX);
-    inipp::get_value(iniParser.sections["Navigation"], "enableOnBoats", config.ENABLE_WATER_GPS);
-    inipp::get_value(iniParser.sections["Navigation"], "trackMovingTargets", config.ENABLE_MOVING);
-    inipp::get_value(iniParser.sections["Navigation"], "removeRadius", config.DISABLE_PROXIMITY);
-    
-    inipp::get_value(iniParser.sections["Extras"], "displayDistance", config.ENABLE_DISTANCE_TEXT);
-    inipp::get_value(iniParser.sections["Extras"], "distanceUnits", config.DISTANCE_UNITS);
+    /* Navigation */
+    config.RESPECT_LANE_DIRECTION = (bool)std::stoi(ini["Navigation"]["respectTrafficLaneDirection"]);
+    config.GPS_LINE_WIDTH = std::stof(ini["Navigation"]["lineWidth"]);
+    config.ENABLE_BMX = (bool)std::stoi(ini["Navigation"]["enableOnBicycles"]);
+    config.ENABLE_WATER_GPS = (bool)std::stoi(ini["Navigation"]["enableOnBoats"]);
+    config.ENABLE_MOVING = (bool)std::stoi(ini["Navigation"]["trackMovingTargets"]);
+    config.DISABLE_PROXIMITY = std::stof(ini["Navigation"]["removeRadius"]);
 
-    inipp::get_value(iniParser.sections["Waypoint"], "lineRed", config.GPS_LINE_R);
-    inipp::get_value(iniParser.sections["Waypoint"], "lineGreen", config.GPS_LINE_G);
-    inipp::get_value(iniParser.sections["Waypoint"], "lineBlue", config.GPS_LINE_B);
-    inipp::get_value(iniParser.sections["Waypoint"], "lineAlpha", config.GPS_LINE_A);
+    /* Extras */
+    config.ENABLE_DISTANCE_TEXT = (bool)std::stoi(ini["Navigation"]["displayDistance"]);
+    config.DISTANCE_UNITS = (bool)std::stoi(ini["Navigation"]["distanceUnits"]);
 
-    inipp::get_value(iniParser.sections["Custom Colors"], "enabled", config.ENABLE_CUSTOM_CLRS);
-
-    inipp::get_value(iniParser.sections["Misc"], "enableLog", config.LOGFILE_ENABLED);
-
+    /* Custom Colors */
+    config.ENABLE_CUSTOM_CLRS = (bool)std::stoi(ini["Custom Colors"]["enabled"]);
     if (config.ENABLE_CUSTOM_CLRS) {
-        std::string buffer;
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "red", buffer);
-        ExtractColorFromString(buffer, config.CC_RED);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "green", buffer);
-        ExtractColorFromString(buffer, config.CC_GREEN);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "blue", buffer);
-        ExtractColorFromString(buffer, config.CC_BLUE);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "white", buffer);
-        ExtractColorFromString(buffer, config.CC_WHITE);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "yellow", buffer);
-        ExtractColorFromString(buffer, config.CC_YELLOW);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "purple", buffer);
-        ExtractColorFromString(buffer, config.CC_PURPLE);
-
-        inipp::get_value(iniParser.sections["Custom Colors"], "cyan", buffer);
-        ExtractColorFromString(buffer, config.CC_CYAN);
+        ExtractColorFromString(ini["Custom Colors"]["waypoint"], config.GPS_LINE_CLR);
+        ExtractColorFromString(ini["Custom Colors"]["red"], config.CC_RED);
+        ExtractColorFromString(ini["Custom Colors"]["green"], config.CC_GREEN);
+        ExtractColorFromString(ini["Custom Colors"]["blue"], config.CC_BLUE);
+        ExtractColorFromString(ini["Custom Colors"]["white"], config.CC_WHITE);
+        ExtractColorFromString(ini["Custom Colors"]["yellow"], config.CC_YELLOW);
+        ExtractColorFromString(ini["Custom Colors"]["purple"], config.CC_PURPLE);
+        ExtractColorFromString(ini["Custom Colors"]["cyan"], config.CC_CYAN);
     }
 
-    iniFile.close();
+    /* Log */
+    config.LOGFILE_ENABLED = (bool)std::stoi(ini["Misc"]["enableLog"]);
 }

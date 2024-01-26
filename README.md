@@ -33,5 +33,5 @@ make sure the source you downloaded this mod from can be trusted and is approved
 
 ## [Default Config](GPSLine/SA.GPS.CONF.ini)
 ### This mod uses the following libraries:
-* [inipp](https://github.com/mcmtroffaes/inipp)
+* [mINI](https://github.com/metayeti/mINI)
 * [plugin-sdk](https://github.com/DK22Pac/plugin-sdk)

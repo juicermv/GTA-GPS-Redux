@@ -78,7 +78,7 @@ CRGBA GPS::SetupColor(short color, bool friendly) {
 
     if (color < 1 || color > 8)
     {
-        clr = CRGBA(cfg.GPS_LINE_R, cfg.GPS_LINE_G, cfg.GPS_LINE_B, cfg.GPS_LINE_A);
+        clr = cfg.GPS_LINE_CLR;
     }
     else {
         this->CurrentColor = clr;
@@ -87,7 +87,7 @@ CRGBA GPS::SetupColor(short color, bool friendly) {
     return clr;
 }
 
-void GPS::Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr) {
+void GPS::Setup2dVertex(RwIm2DVertex& vertex, double x, double y, CRGBA clr) {
     vertex.x = x;
     vertex.y = y;
     vertex.u = vertex.v = 0.0f;
@@ -679,7 +679,7 @@ float KMtoM(float km) {
 
 // Meters to yards.
 float mtoyard(float m) {
-    return m * 1.094;
+    return m * 1.094f;
 }
 
 std::string makeDist(float dist, short units) {
@@ -728,12 +728,7 @@ void GPS::DrawHudEventHandle() {
     if (renderTargetRoute) {
 
         CFont::SetOrientation(ALIGN_CENTER);
-        CFont::SetColor(CRGBA(
-            (unsigned char)cfg.GPS_LINE_R,
-            (unsigned char)cfg.GPS_LINE_G,
-            (unsigned char)cfg.GPS_LINE_B,
-            (unsigned char)cfg.GPS_LINE_A
-        ));
+        CFont::SetColor(cfg.GPS_LINE_CLR);
 
         CFont::SetBackground(false, false);
         CFont::SetWrapx(500.0f);

@@ -5,7 +5,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GPS.h" />
-    <ClInclude Include="inipp.h" />
     <ClInclude Include="Config.h" />
   </ItemGroup>
   <ItemGroup>

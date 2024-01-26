@@ -156,7 +156,6 @@
   <ItemGroup>
     <ClInclude Include="Config.h" />
     <ClInclude Include="GPS.h" />
-    <ClInclude Include="inipp.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md">

@@ -15,7 +15,6 @@
 #include <limits>
 #include <iomanip>
 
-#include "inipp.h"
 #include "Config.h"
 
 #include "plugin.h"
@@ -144,7 +143,7 @@ private:
 
     CRGBA SetupColor(short color, bool friendly);
 
-    void Setup2dVertex(RwIm2DVertex& vertex, float x, float y, CRGBA clr);
+    void Setup2dVertex(RwIm2DVertex& vertex, double x, double y, CRGBA clr);
 
     // Self explanatory.
     void calculatePath(
