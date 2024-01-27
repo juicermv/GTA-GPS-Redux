@@ -1,6 +1,6 @@
-# GTA SA GPS Redux
+# GTA III GPS Redux
 
-This mod includes automatic navigation for mission markers as well as the player-set waypoint.
+This mod includes automatic navigation for mission markers.
 If you'd like to contribute, go ahead.
 
     Warning: This mod is still in the testing phase, if you find any 
@@ -12,8 +12,6 @@ If you'd like to contribute, go ahead.
 The mod currently doesn't work with pickups due to technical reasons.
 In some missions, a nav route will not appear for a valid target. 
 This is a limitation of SA's pathfinding, as some coordinates break it and make it not generate any path. This also happens with the target route.
-
-Please note that SAMP builds aren't maintained since I don't have SAMP and am not familiar with how it works.
 
 ## Re-Upload Policy
 If you'd like to distribute this mod, please ask for my (juicermv) permission first. 
