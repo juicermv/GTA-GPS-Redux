@@ -1,11 +1,11 @@
-# GTA III GPS Redux
+# GTA SA GPS Redux
 
-This mod includes automatic navigation for mission markers.
+This mod includes automatic navigation for mission markers as well as the player target.
 If you'd like to contribute, go ahead.
 
     Warning: This mod is still in the testing phase, if you find any 
     bugs, please report them as issues on this github repo.
-
+    SAMP is not supported.
 ---
 
 ## Known Issues
