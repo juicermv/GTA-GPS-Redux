@@ -48,32 +48,8 @@
 
 #define MAX_NODE_POINTS 5000
 
-#ifdef SAMP
-
-#include <Windows.h>
-#include <Psapi.h>
-
-#pragma comment( lib, "psapi.lib" )
-#pragma comment( lib, "kernel32.lib" )
-
-
-#define E_ADDR_GAMEPROCESS	0x53E981
-
-#pragma pack(push, 1)
-typedef struct stOpcodeRelCall
-{
-    BYTE bOpcode;
-    DWORD dwRelAddr;
-} OpcodeRelCall;
-#pragma pack(pop)
-#endif
-
 class GPS {
 private:
-#ifdef SAMP
-    HANDLE hThread = NULL;
-#endif
-
     // Config
     Config* cfg = nullptr;
 
@@ -124,10 +100,6 @@ private:
     CVector2D GPS::tmpPoint;
     CVector2D GPS::dir;
     float angle;
-
-#ifdef SAMP
-    static LPVOID WINAPI init(LPVOID* lpParam);
-#endif
 
     void DrawRadarOverlayHandle();
     void GameEventHandle();

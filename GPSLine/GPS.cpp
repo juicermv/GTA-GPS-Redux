@@ -12,8 +12,6 @@ void GPS::calculatePath(
     float& gpsDistance
 )
 {
-    destPosn.z = CWorld::FindGroundZForCoord(destPosn.x, destPosn.y);
-
     ThePaths.DoPathSearch
     (
         0,
@@ -345,62 +343,8 @@ void GPS::Run() {
     plugin::Events::drawRadarEvent += [this]() { this->DrawHudEventHandle(); };
 }
 
-#ifdef SAMP
-LPVOID WINAPI init(LPVOID* lpParam) {
-    MODULEINFO miSampDll;
-    DWORD dwSampDllBaseAddr, dwSampDllEndAddr, dwCallAddr;
-
-    GPSLine* sender = (GPSLine*)lpParam;
-
-    stOpcodeRelCall* fnGameProc = (stOpcodeRelCall*)E_ADDR_GAMEPROCESS;
-
-    // Check if E_ADDR_GAMEPROCESS opcode is a relative call (0xE8)
-    while (fnGameProc->bOpcode != 0xE8)
-        Sleep(100);
-
-    while (true) {
-        Sleep(100);
-
-        // Get samp.dll module information to get base address and end address
-        if (!GetModuleInformation(GetCurrentProcess(), GetModuleHandle("samp.dll"), &miSampDll, sizeof(MODULEINFO))) {
-            continue;
-        }
-
-        // Some stupid calculation
-        dwSampDllBaseAddr = (DWORD)miSampDll.lpBaseOfDll;
-        dwSampDllEndAddr = dwSampDllBaseAddr + miSampDll.SizeOfImage;
-
-        // Calculate destination address by offset and relative call opcode size
-        dwCallAddr = fnGameProc->dwRelAddr + E_ADDR_GAMEPROCESS + 5;
-
-        // Check if dwCallAddr is a samp.dll's hook address, 
-        // to make sure this plugin hook (Events::gameProcessEvent) not replaced by samp.dll
-        if (dwCallAddr >= dwSampDllBaseAddr && dwCallAddr <= dwSampDllEndAddr)
-            break;
-    }
-
-    // Just wait a few secs for the game loaded fully to avoid any conflicts and crashes
-    // I don't know what the elegant way is :)
-    while (!FindPlayerPed(0))
-        Sleep(5000);
-
-    // Run the plugin
-    sender->Run();
-
-    // Reset the thread handle
-    sender->hThread = NULL;
-
-    return 0;
-}
-
-#endif
-
 GPS::GPS() {
-#ifdef SAMP
-    this->hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)init, (LPVOID)this, 0, (LPDWORD)NULL);
-#else
     this->Run();
-#endif
 }
 
 
@@ -411,11 +355,6 @@ GPS::~GPS() {
 
     if(cfg->LOGFILE_ENABLED)
         this->logfile.close();
-
-    #ifdef SAMP
-        if (this->hThread != NULL)
-            TerminateThread(this->hThread, 0);
-    #endif
 }
 
 void GPS::renderMissionTrace(tRadarTrace *trace) {
