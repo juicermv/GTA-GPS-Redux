@@ -36,7 +36,7 @@ jobs:
       run: git submodule init && git submodule update
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1
+      uses: microsoft/setup-msbuild@v2
 
     - name: Set GitHub PLUGIN_SDK_DIR
       run: echo "PLUGIN_SDK_DIR=${{runner.temp}}/pluginsdk" | Out-File -FilePath $env:GITHUB_ENV
