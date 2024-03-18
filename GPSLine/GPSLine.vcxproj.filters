@@ -6,6 +6,7 @@
   <ItemGroup>
     <ClInclude Include="GPS.h" />
     <ClInclude Include="Config.h" />
+    <ClInclude Include="DistCache.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

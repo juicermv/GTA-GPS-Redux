@@ -4,37 +4,38 @@
     https://github.com/DK22Pac/plugin-sdk
     Do not delete this comment block. Respect others' work!
 */
-#include <iostream>
-#include <fstream>
-#include <iterator>
-#include <string>
+#include <algorithm>
 #include <chrono>
 #include <ctime>
-#include <vector>
-#include <algorithm>
-#include <limits>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <string>
+#include <vector>
 
 #include "Config.h"
+#include "DistCache.h"
 
-#include "plugin.h"
-#include "RenderWare.h"
-#include "common.h"
-#include "CMenuManager.h"
-#include "CRadar.h"
+#include "CFont.h"
 #include "CGeneral.h"
-#include "CWorld.h"
-#include "CPools.h"
-#include "CVehicle.h"
-#include "CPed.h"
+#include "CHudColours.h"
+#include "CMenuManager.h"
 #include "CObject.h"
+#include "CPed.h"
 #include "CPickup.h"
 #include "CPickups.h"
+#include "CPools.h"
+#include "CRadar.h"
 #include "CTheScripts.h"
-#include "CHudColours.h"
+#include "CVehicle.h"
+#include "CWorld.h"
 #include "Color.h"
-#include "CFont.h"
+#include "RenderWare.h"
+#include "common.h"
 #include "d3d9.h"
+#include "plugin.h"
 
 /*
     #define MAX_NODE_POINTS 50000
@@ -49,95 +50,88 @@
 #define MAX_NODE_POINTS 5000
 
 class GPS {
-private:
-    // Config
-    Config* cfg = nullptr;
+ private:
+  // Config
+  Config* cfg = nullptr;
 
-    //Logging stuff
-    unsigned short logLines;
-    std::ofstream logfile;
-    void Log(std::string val);
-    bool once;
+  // Logging stuff
+  unsigned short logLines;
+  std::ofstream logfile;
+  void Log(std::string val);
+  bool once;
 
-    // These variables will be used for the gps route following the target blip set by the player
-    float targetDistance;
-    short targetNodesCount;
+  // These variables will be used for the gps route following the target blip
+  // set by the player
+  float targetDistance;
+  short targetNodesCount;
 
-    CVector destVec;
+  CVector destVec;
 
-    CNodeAddress t_ResultNodes[MAX_NODE_POINTS];
-    RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
+  CNodeAddress t_ResultNodes[MAX_NODE_POINTS];
+  RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
 
-    // These will be used for mission objectives
-    float missionDistance;
-    short missionNodesCount;
+  // These will be used for mission objectives
+  float missionDistance;
+  short missionNodesCount;
 
-    CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
-    RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
+  CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
+  RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
 
-    char pathNodesToStream[1024];
-    int pathNodes[50000];
-
-    CVector PrevPos;
-    CVector PrevDest;
-
-    CVector PlayerPos;
-    void UpdatePlayerPos();
-
-    bool renderMissionRoute;
-    bool renderTargetRoute;
-
-    CVector targetTracePos;
-
-    tRadarTrace *mTrace;
-
-    CRGBA CurrentColor;
+  char pathNodesToStream[1024];
+  int pathNodes[50000];
 
 
-    // Graphics stuff
-    CVector2D GPS::tmpNodePoints[MAX_NODE_POINTS];
-    CVector2D GPS::targetScreen;
-    CVector2D GPS::tmpPoint;
-    CVector2D GPS::dir;
-    float angle;
+  CPed* player;
 
-    void DrawRadarOverlayHandle();
-    void GameEventHandle();
-    void DrawHudEventHandle();
+  bool renderMissionRoute;
+  bool renderTargetRoute;
 
-    void Run();
+  CVector targetTracePos;
 
-    bool CheckBMX(CPed* player);
+  tRadarTrace* mTrace;
 
-    const char* VectorToString(std::vector<tRadarTrace>& vec);
+  CRGBA CurrentColor;
 
-    bool NavEnabled(CPed* player);
+  // Graphics stuff
+  CVector2D tmpNodePoints[MAX_NODE_POINTS];
+  CVector2D targetScreen;
+  CVector2D tmpPoint;
+  CVector2D dir;
+  float angle;
 
-    CRGBA SetupColor(short color, bool friendly);
+  void DrawRadarOverlayHandle();
+  void GameEventHandle();
+  void DrawHudEventHandle();
 
-    void Setup2dVertex(RwIm2DVertex& vertex, double x, double y, CRGBA clr);
+  void Run();
 
-    // Self explanatory.
-    void calculatePath(
-        CVector destPosn,
-        short& nodesCount,
-        CNodeAddress* resultNodes,
-        float& gpsDistance
-    );
+  bool CheckBMX(CPed* player);
 
-    void renderPath(
-        CVector tracePos, 
-        short color, 
-        bool friendly, 
-        short& nodesCount, 
-        CNodeAddress* resultNodes, 
-        float& gpsDistance, 
-        RwIm2DVertex* lineVerts
-    );
+  const char* VectorToString(std::vector<tRadarTrace>& vec);
 
-    void renderMissionTrace(tRadarTrace *trace);
+  bool NavEnabled(CPed* player);
 
-public:
-    GPS();
-    ~GPS();
+  CRGBA SetupColor(short color, bool friendly);
+
+  void Setup2dVertex(RwIm2DVertex& vertex, double x, double y, CRGBA clr);
+
+  // Self explanatory.
+  void calculatePath(CVector destPosn,
+                     short& nodesCount,
+                     CNodeAddress* resultNodes,
+                     float& gpsDistance);
+
+  void renderPath(CVector tracePos,
+                  short color,
+                  bool friendly,
+                  short& nodesCount,
+                  CNodeAddress* resultNodes,
+                  float& gpsDistance,
+                  RwIm2DVertex* lineVerts);
+
+  void renderMissionTrace(tRadarTrace* trace);
+
+ public:
+  GPS();
+  ~GPS();
 } GPSLineRedux;
