@@ -4,6 +4,9 @@
     https://github.com/DK22Pac/plugin-sdk
     Do not delete this comment block. Respect others' work!
 */
+#define _USE_MATH_DEFINES
+ 
+#include <cmath>
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -92,12 +95,16 @@ class GPS {
 
   CRGBA CurrentColor;
 
-  // Graphics stuff
+  // Graphics stuff & temp variables moved from heap
   CVector2D tmpNodePoints[MAX_NODE_POINTS];
   CVector2D targetScreen;
   CVector2D tmpPoint;
   CVector2D dir;
   float angle;
+  unsigned int vertIndex = 0;
+  CVector2D shift[2];
+  CPathNode* currentNode;
+  CVector nodePosn;
 
   void DrawRadarOverlayHandle();
   void GameEventHandle();

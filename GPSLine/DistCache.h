@@ -25,10 +25,8 @@ class DistCache {
     if (cache.find(the_pair) != cache.end()) {
       return cache[the_pair];
     } else {
-      if (cache.size() >= 10) {
-        while (cache.size() >= 10) {
-          cache.erase(cache.begin());
-        }
+      while (cache.size() >= 10) {
+        cache.erase(cache.begin());
       }
 
       float out = DistanceBetweenPoints(v1, v2);
