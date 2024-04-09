@@ -8,6 +8,12 @@ If you'd like to contribute, go ahead.
     SAMP is not supported.
 ---
 
+<div align='center'>
+<img src='https://github.com/juicermv/GTA-GPS-Redux/assets/34755463/879efcd9-6d7b-43b6-8198-3452756ac9a2'>
+<img src='https://github.com/juicermv/GTA-GPS-Redux/assets/34755463/39e3170a-8aea-4666-aabc-430f925c1684'>
+<img src='https://github.com/juicermv/GTA-GPS-Redux/assets/34755463/dc40c010-6e32-4ba0-b669-b128618bbd5e'>
+</div>
+
 ## Known Issues
 The mod currently doesn't work with pickups due to technical reasons.
 In some missions, a nav route will not appear for a valid target. 
@@ -21,6 +27,7 @@ make sure the source you downloaded this mod from can be trusted and is approved
 ## You can find the latest release under the releases on the GitHub page. For the latest WIP build (unstable) check out the Actions tab on the GitHub.
 
 ## Installation
+
 
 1. Via modloader
     - Create a new folder inside your modloader folder. You can name it whatever you want.
