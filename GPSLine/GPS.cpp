@@ -447,15 +447,31 @@ float mtoyard(float m) {
   return m * 1.094f;
 }
 
-std::string makeDist(float dist, short units) {
-  if (dist >= 1000.0f) {
-    dist /= 1000.0f;
-    return units == 0 ? std::to_string(dist) + "KM"
-                      : std::to_string(KMtoM(dist)) + "Mi";
-  }
+std::string Float2String(float in, unsigned char precision = 2) {
+  std::stringstream stream;
+  stream << std::fixed << std::setprecision(precision) << in;
+  return stream.str();
+}
 
-  return units == 0 ? std::to_string(dist) + "m"
-                    : std::to_string(mtoyard(dist)) + "yrd";
+std::string makeDist(float dist, bool units) {
+  // 1 Unit of distance = 1 meter.
+  switch (units) {
+    case 0:
+      if (dist > 999) {
+        return Float2String(dist / 1000, 1) + "KM";
+      } else {
+        return Float2String(dist, 0) + "m";
+      }
+      break;
+    case 1:
+      dist = mtoyard(dist);
+      if (dist > 599) {
+        return Float2String(dist / 1760, 1) + "Mi";
+      } else {
+        return Float2String(dist, 0) + "yrds";
+      }
+      break;
+  }
 }
 
 void GPS::DrawHudEventHandle() {
