@@ -112,11 +112,11 @@ class GPS {
 
   void Run();
 
-  bool CheckBMX(CPed* player);
+  constexpr bool CheckBMX(CPed* player);
 
   const char* VectorToString(std::vector<tRadarTrace>& vec);
 
-  bool NavEnabled(CPed* player);
+  constexpr bool NavEnabled(CPed* player);
 
   CRGBA SetupColor(short color, bool friendly);
 

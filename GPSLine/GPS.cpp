@@ -203,7 +203,7 @@ void GPS::renderPath(CVector tracePos,
 }
 
 // Check whether on BMX, will always return false if bmx support is enabled.
-bool GPS::CheckBMX(CPed* player) {
+constexpr bool GPS::CheckBMX(CPed* player) {
   if (this->cfg->ENABLE_BMX)
     return false;
 
@@ -337,7 +337,7 @@ const char* GPS::VectorToString(std::vector<tRadarTrace>& vec) {
   return outChar;
 }
 
-bool GPS::NavEnabled(CPed* player) {
+constexpr bool GPS::NavEnabled(CPed* player) {
   return (player && player->m_pVehicle && player->m_nPedFlags.bInVehicle &&
           player->m_pVehicle->m_nVehicleSubClass != VEHICLE_PLANE &&
           player->m_pVehicle->m_nVehicleSubClass != VEHICLE_HELI &&
@@ -393,11 +393,10 @@ void GPS::GameEventHandle() {
       CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)]
           .m_nBlipDisplay &&
       distCache.GetDist(
-          CVector(player->GetPosition()),
-          CVector(
+          player->GetPosition(),
               CRadar::ms_RadarTrace[LOWORD(
                                         FrontEndMenuManager.m_nTargetBlipIndex)]
-                  .m_vecPos)) <= cfg->DISABLE_PROXIMITY) {
+                  .m_vecPos) <= cfg->DISABLE_PROXIMITY) {
     CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
     FrontEndMenuManager.m_nTargetBlipIndex = 0;
     renderTargetRoute = false;
@@ -437,13 +436,8 @@ void GPS::GameEventHandle() {
   }
 }
 
-// Kilometers to Miles.
-float KMtoM(float km) {
-  return km / 1.609f;
-}
-
 // Meters to yards.
-float mtoyard(float m) {
+constexpr float mtoyard(float m) {
   return m * 1.094f;
 }
 
@@ -458,17 +452,17 @@ std::string makeDist(float dist, bool units) {
   switch (units) {
     case 0:
       if (dist > 999) {
-        return Float2String(dist / 1000, 1) + "KM";
+        return Float2String(dist / 1000, 1) + " KM";
       } else {
-        return Float2String(dist, 0) + "m";
+        return Float2String(dist, 0) + " m";
       }
       break;
     case 1:
       dist = mtoyard(dist);
       if (dist > 599) {
-        return Float2String(dist / 1760, 1) + "Mi";
+        return Float2String(dist / 1760, 1) + " Mi";
       } else {
-        return Float2String(dist, 0) + "yrds";
+        return Float2String(dist, 0) + " yrds";
       }
       break;
   }

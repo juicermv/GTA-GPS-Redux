@@ -21,7 +21,7 @@ class DistCache {
 
  public:
   inline float GetDist(const CVector& v1, const CVector& v2) {
-    CVectorPair the_pair = {v1, v2};
+    const CVectorPair the_pair = {v1, v2};
     if (cache.find(the_pair) != cache.end()) {
       return cache[the_pair];
     } else {
