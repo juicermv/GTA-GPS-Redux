@@ -43,7 +43,7 @@ jobs:
     
     - name: Build plugin
       working-directory: ${{env.GITHUB_WORKFLOW}}
-      run: ."${{runner.temp}}/numake.exe" build * -w "${{env.GITHUB_WORKFLOW}}"
+      run: ."${{runner.temp}}/numake.exe" build *
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
