@@ -38,10 +38,10 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
-    - name: Download latest PluginSDK build
+    - name: Download numake
       run: gh release download indev -R juicermv/numake -p '*.exe' --dir "${{runner.temp}}"
     
-    - name: Build plugin
+    - name: Build using numake
       working-directory: ${{env.GITHUB_WORKFLOW}}
       run: ."${{runner.temp}}/numake.exe" build *
 
