@@ -63,8 +63,6 @@ CRGBA GPS::SetupColor(short color, bool friendly) {
 
   if (color < 1 || color > 8) {
     clr = cfg->GPS_LINE_CLR;
-  } else {
-    this->CurrentColor = clr;
   }
 
   return clr;
@@ -477,7 +475,7 @@ void GPS::DrawHudEventHandle() {
 
   if (renderMissionRoute) {
     CFont::SetOrientation(ALIGN_CENTER);
-    CFont::SetColor(this->CurrentColor);
+    CFont::SetColor(SetupColor(this->mTrace->m_nColour, this->mTrace->m_bFriendly));
     CFont::SetBackground(false, false);
     CFont::SetWrapx(500.0f);
     CFont::SetScale(0.3f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,

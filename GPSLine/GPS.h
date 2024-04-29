@@ -93,8 +93,6 @@ class GPS {
 
   tRadarTrace* mTrace;
 
-  CRGBA CurrentColor;
-
   // Graphics stuff & temp variables moved from heap
   CVector2D tmpNodePoints[MAX_NODE_POINTS];
   CVector2D targetScreen;
