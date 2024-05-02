@@ -7,7 +7,7 @@ project.msvc_arch = "x86"
 project.output = "SA.GPS.REDUX.asi"
 
 project.library_paths = {
-    PLUGIN_SDK_DIR .. "/output/lib/",
+    PLUGIN_SDK_DIR .. "/.numake/out/plugin_sa/",
     "GPSLine"
 }
 
@@ -67,6 +67,6 @@ project.assets = {
     ["GPSLine/SA.GPS.CONF.ini"] = "SA.GPS.CONF.ini"
 }
 
-project:add_dir("GPSLine", false, {"cpp"})
+project.files = workspace:walk_dir("GPSLine", false, {"cpp"})
 
 workspace:register_target(project)
