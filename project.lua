@@ -3,7 +3,7 @@
 PLUGIN_SDK_DIR = workspace:download_zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/release.zip")
 
 project = workspace:create_msvc_target("SA-GPS-Redux")
-project.msvc_arch = "x86"
+project.arch = "x86"
 project.output = "SA.GPS.REDUX.asi"
 
 project.library_paths = {
