@@ -73,11 +73,11 @@ project.library_paths = {
 }
 
 project.include_paths = {
-    PLUGIN_SDK_DIR,
-    PLUGIN_SDK_DIR .. "/plugin_sa/",
-    PLUGIN_SDK_DIR .. "/plugin_sa/game_sa/",
-    PLUGIN_SDK_DIR .. "/shared/",
-    PLUGIN_SDK_DIR .. "/shared/game/",
+    PLUGIN_SDK_DIR .. "/src/",
+    PLUGIN_SDK_DIR .. "/src/plugin_sa/",
+    PLUGIN_SDK_DIR .. "/src/plugin_sa/game_sa/",
+    PLUGIN_SDK_DIR .. "/src/shared/",
+    PLUGIN_SDK_DIR .. "/src/shared/game/",
     "external/mini/src",
     "GPSLine"
 }
