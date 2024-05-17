@@ -4,7 +4,7 @@ workspace:set("mingw", workspace.arguments["mingw"])
 local project
 local PLUGIN_SDK_DIR
 
-if workspace.platform == "windows" and workspace:get("mingw") == "false" then
+if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     PLUGIN_SDK_DIR = workspace:download_zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/msvc.zip")
     project = workspace:create_msvc_target("SA-GPS-Redux")
     project.arch = "x86"
