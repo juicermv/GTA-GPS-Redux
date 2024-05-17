@@ -18,7 +18,7 @@ if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     project.compiler_flags = {
         "/Ot",
         "/Ob1",
-        "/std:c++17",
+        "/std:c++latest",
         "/GT",
         "/fp:fast",
         "/W3",
@@ -46,7 +46,7 @@ else
     }
 
     project.compiler_flags = {
-        "-std=c++17",
+        "-std=gnu++23",
         "-Ofast",
         "-fpermissive",
         "-shared",
