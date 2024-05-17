@@ -1,10 +1,10 @@
-# GTA SA GPS Redux
-
 <div align='center'>
     <img height="200" src='https://github.com/juicermv/GTA-GPS-Redux/assets/34755463/879efcd9-6d7b-43b6-8198-3452756ac9a2'>
     <img height="200" src='https://github.com/juicermv/GTA-GPS-Redux/assets/34755463/39e3170a-8aea-4666-aabc-430f925c1684'>
     <img height="200" src='https://github.com/juicermv/GTA-GPS-Redux/assets/34755463/dc40c010-6e32-4ba0-b669-b128618bbd5e'>
 </div>
+
+# GTA SA GPS Redux
 
 This mod includes automatic navigation for mission markers as well as the player target.
 If you'd like to contribute, go ahead.
