@@ -1,5 +1,7 @@
 --! NUMAKE PROJECT
-workspace:set("mingw", workspace.arguments["mingw"])
+if workspace.arguments["mingw"] ~= nil then
+    workspace:set("mingw", workspace.arguments["mingw"])
+end
 
 local project
 local PLUGIN_SDK_DIR
@@ -34,7 +36,7 @@ if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
         "/LTCG",
         "/DLL"
     }
-else
+else --- MinGW build has memory access issues when calling DoPathFind. Don't use it.
     PLUGIN_SDK_DIR = workspace:download_zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/mingw.zip")
     project = workspace:create_mingw_target("SA-GPS-Redux")
     project.arch = "i686"
