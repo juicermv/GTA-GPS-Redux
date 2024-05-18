@@ -44,7 +44,7 @@ jobs:
     
     - name: Build using numake
       working-directory: ${{env.GITHUB_WORKFLOW}}
-      run: ."${{runner.temp}}/numake.exe" build *
+      run: ."${{runner.temp}}/numake.exe" build all
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
