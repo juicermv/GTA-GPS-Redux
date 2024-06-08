@@ -18,22 +18,22 @@ if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     }
 
     project.compiler_flags = {
-        "/Ot",
+        "/Ox",
         "/Ob1",
-        "/std:c++23",
+        "/std:c++latest",
         "/GT",
         "/fp:fast",
         "/W3",
         "/Gy",
         "/MT",
-        "/Oi"
+        "/Oi",
+        "/EHsc"
     }
 
     project.linker_flags = {
         "/SUBSYSTEM:WINDOWS",
         "/OPT:ICF",
         "/OPT:REF",
-        "/LTCG",
         "/DLL"
     }
 else --- MinGW build has memory access issues when calling DoPathFind. Don't use it.
@@ -64,13 +64,13 @@ end
 
 project.assets = {
     ["README.md"] = "README.md",
-    ["GPSLine/SA.GPS.CONF.ini"] = "SA.GPS.CONF.ini"
+    ["SA.GPS.CONF.ini"] = "SA.GPS.CONF.ini"
 }
 
 project.output = "SA.GPS.REDUX.asi"
 project.library_paths = {
     PLUGIN_SDK_DIR .. "/lib/plugin_sa/",
-    "GPSLine"
+    "external/dx9"
 }
 
 project.include_paths = {
@@ -80,11 +80,11 @@ project.include_paths = {
     PLUGIN_SDK_DIR .. "/src/shared/",
     PLUGIN_SDK_DIR .. "/src/shared/game/",
     "external/mini/src",
-    "GPSLine"
+    "src"
 }
 
 project.definitions = {
-    --"_NDEBUG",
+    "_NDEBUG",
     "_CRT_SECURE_NO_WARNINGS",
     "_CRT_NON_CONFORMING_SWPRINTFS",
     "GTASA", 
@@ -95,9 +95,10 @@ project.definitions = {
     "GTAGAME_CITYNAME=\"San Andreas\"", 
     "_LA_SUPPORT", 
     "_DX9_SDK_INSTALLED", 
-    "PLUGIN_SGV_10US"
+    "PLUGIN_SGV_10US",
+    "_USE_MATH_DEFINES"
 }
 
-project.files = workspace:walk_dir("GPSLine", false, {"cpp"})
+project.files = workspace:walk_dir("src", false, {"cpp"})
 
 workspace:register_target(project)
