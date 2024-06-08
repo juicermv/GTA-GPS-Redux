@@ -106,7 +106,7 @@ class GPS
 
 	void DrawRadarOverlayHandle();
 	void GameEventHandle();
-	void DrawHudEventHandle();
+	constexpr void DrawHudEventHandle();
 
 	void Run();
 

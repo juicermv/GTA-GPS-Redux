@@ -20,7 +20,7 @@ if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     project.compiler_flags = {
         "/Ot",
         "/Ob1",
-        "/std:c++latest",
+        "/std:c++23",
         "/GT",
         "/fp:fast",
         "/W3",
@@ -53,7 +53,6 @@ else --- MinGW build has memory access issues when calling DoPathFind. Don't use
         "-fpermissive",
         "-shared",
         "-g",
-        "-flto"
     }
 
     project.linker_flags = {

@@ -15,8 +15,7 @@ void GPS::calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resul
 	);
 }
 
-CRGBA
-GPS::SetupColor(short color, bool friendly)
+CRGBA GPS::SetupColor(short color, bool friendly)
 {
 	CRGBA clr;
 
@@ -140,7 +139,8 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 	{
 		vColor = this->SetupColor(color, friendly);
 
-		dir = tmpNodePoints[i + 1] - tmpNodePoints[i]; // Direction between current node to next node
+		dir = tmpNodePoints[i + 1] - tmpNodePoints[i]; // Direction between current node to next
+													   // node
 		angle = atan2(dir.y, dir.x);				   // Convert direction to angle
 
 		if (!FrontEndMenuManager.m_bDrawRadarOrMap)
@@ -164,9 +164,9 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 			shift[1].y = sinf(angle + M_PI_2) * cfg->GPS_LINE_WIDTH * mp;
 		}
 
-		// Only set up vertices for points visible on the radar. If the radar
-		// rect is 0 we assume the full screen map is open so we don't apply
-		// this optimization.
+		// Only set up vertices for points visible on the radar. If the
+		// radar rect is 0 we assume the full screen map is open so we
+		// don't apply this optimization.
 		if (scissorRect.IsPointInside(tmpNodePoints[i]) ||
 			(scissorRect.bottom + scissorRect.top + scissorRect.left + scissorRect.right) == 0)
 		{
@@ -189,7 +189,7 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 				vColor);
 
 			this->Setup2dVertex(lineVerts[vertIndex + 3],			 // NextNode - NextNode*
-								tmpNodePoints[i + 1].x + shift[1].x, //    |             |
+								tmpNodePoints[i + 1].x + shift[1].x, //    | |
 								tmpNodePoints[i + 1].y + shift[1].y, // CurrentNode - CurrentNode
 								vColor);
 
@@ -309,7 +309,8 @@ void GPS::renderMissionTrace(tRadarTrace *trace)
 	case 0: // NONE???
 		return;
 	case 7: // Pickups
-		// this->Log("Pickup detected. Not providing GPS navigation!");
+		renderMissionRoute = false;
+		this->Log("Pickup detected. Not providing GPS navigation!");
 		return;
 	default:
 		destVec = trace->m_vecPos;
@@ -318,9 +319,12 @@ void GPS::renderMissionTrace(tRadarTrace *trace)
 
 	// this->Log("DestVec: " + std::to_string(destVec.x) + ", " +
 	// std::to_string(destVec.y));
-	this->calculatePath(destVec, missionNodesCount, m_ResultNodes, missionDistance);
-	this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes, missionDistance,
-					 m_LineVerts);
+	if (renderMissionRoute)
+	{
+		this->calculatePath(destVec, missionNodesCount, m_ResultNodes, missionDistance);
+		this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes,
+						 missionDistance, m_LineVerts);
+	}
 }
 
 void GPS::Log(std::string val)
@@ -400,7 +404,7 @@ void GPS::GameEventHandle()
 	{
 		renderMissionRoute = mTrace->m_bInUse;
 		if (mTrace->m_nBlipDisplay < 2 ||
-			distCache.GetDist(player->GetPosition(), mTrace->m_vecPos) <= cfg->DISABLE_PROXIMITY)
+			distCache.GetDist2D(player->GetPosition(), mTrace->m_vecPos) <= cfg->DISABLE_PROXIMITY)
 		{
 			renderMissionRoute = false;
 		}
@@ -419,8 +423,8 @@ void GPS::GameEventHandle()
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter ==
 			HIWORD(FrontEndMenuManager.m_nTargetBlipIndex) &&
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay &&
-		distCache.GetDist(player->GetPosition(),
-						  CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos) <=
+		distCache.GetDist2D(player->GetPosition(),
+							CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos) <=
 			cfg->DISABLE_PROXIMITY)
 	{
 		CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
@@ -510,7 +514,7 @@ std::string makeDist(float dist, bool units)
 	}
 }
 
-void GPS::DrawHudEventHandle()
+constexpr void GPS::DrawHudEventHandle()
 {
 	if (!cfg->ENABLE_DISTANCE_TEXT)
 		return;
