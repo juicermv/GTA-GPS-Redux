@@ -4,9 +4,3 @@
 [submodule "external/simdstring"]
 	path = external/simdstring
 	url = https://github.com/RobloxResearch/SIMDString
-[submodule "external/eastl"]
-	path = external/eastl
-	url = https://github.com/electronicarts/EASTL
-[submodule "external/eabase"]
-	path = external/eabase
-	url = https://github.com/electronicarts/EABASE
