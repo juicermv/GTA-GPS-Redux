@@ -72,7 +72,7 @@ project.assets = {
 project.output = "SA.GPS.REDUX.asi"
 project.library_paths = {
     PLUGIN_SDK_DIR .. "/lib/plugin_sa/",
-    "external/dx9",
+    "external/d3dx9",
 }
 
 project.include_paths = {
