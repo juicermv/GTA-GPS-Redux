@@ -3,7 +3,7 @@
 #include <CVector2D.h>
 #include <algorithm>
 
-#include <unordered_map>
+#include <map>
 
 class DistCache
 {
@@ -22,7 +22,7 @@ class DistCache
 		};
 	};
 
-	std::unordered_map<CVectorPair, float> cache{};
+	std::map<CVectorPair, float> cache{};
 
   public:
 	inline float GetDist(const CVector &v1, const CVector &v2)
