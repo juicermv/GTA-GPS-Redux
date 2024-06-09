@@ -15,8 +15,7 @@ if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     project.libraries = {
         "plugin.lib",
         "d3d9.lib",
-        "d3dx9.lib",
-        "eastl.lib"
+        "d3dx9.lib"
     }
 
     project.compiler_flags = {
