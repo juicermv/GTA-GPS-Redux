@@ -1,6 +1,8 @@
 #include "Config.h"
 #include "DistCache.h"
+
 #include <CRGBA.h>
+#include <SIMDString.h>
 
 CRGBA SetupColor(short color, bool friendly, Config cfg)
 {
@@ -75,14 +77,14 @@ constexpr float mtoyard(float m)
 	return m * 1.094f;
 }
 
-std::string Float2String(float in, unsigned char precision = 2)
+SIMDString<64> Float2String(float in, unsigned char precision = 2)
 {
-	std::stringstream stream;
+	std::ostringstream stream;
 	stream << std::fixed << std::setprecision(precision) << in;
-	return stream.str();
+	return SIMDString<64>(stream.str());
 }
 
-std::string makeDist(float dist, bool units)
+SIMDString<64> makeDist(float dist, bool units)
 {
 	// 1 Unit of distance = 1 meter.
 	switch (units)

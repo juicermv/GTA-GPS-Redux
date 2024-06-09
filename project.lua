@@ -3,6 +3,7 @@ if workspace.arguments["mingw"] ~= nil then
     workspace:set("mingw", workspace.arguments["mingw"])
 end
 
+
 local project
 local PLUGIN_SDK_DIR
 
@@ -14,7 +15,8 @@ if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     project.libraries = {
         "plugin.lib",
         "d3d9.lib",
-        "d3dx9.lib"
+        "d3dx9.lib",
+        "eastl.lib"
     }
 
     project.compiler_flags = {
@@ -70,7 +72,7 @@ project.assets = {
 project.output = "SA.GPS.REDUX.asi"
 project.library_paths = {
     PLUGIN_SDK_DIR .. "/lib/plugin_sa/",
-    "external/dx9"
+    "external/dx9",
 }
 
 project.include_paths = {
@@ -80,6 +82,7 @@ project.include_paths = {
     PLUGIN_SDK_DIR .. "/src/shared/",
     PLUGIN_SDK_DIR .. "/src/shared/game/",
     "external/mini/src",
+    "external/simdstring",
     "src"
 }
 

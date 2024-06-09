@@ -13,8 +13,6 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
-#include <string>
-#include <vector>
 
 #include "CFont.h"
 #include "CGeneral.h"

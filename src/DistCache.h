@@ -1,9 +1,9 @@
 #pragma once
 #include <CVector.h>
 #include <CVector2D.h>
-
 #include <algorithm>
-#include <map>
+
+#include <unordered_map>
 
 class DistCache
 {
@@ -22,7 +22,7 @@ class DistCache
 		};
 	};
 
-	std::map<CVectorPair, float> cache{};
+	std::unordered_map<CVectorPair, float> cache{};
 
   public:
 	inline float GetDist(const CVector &v1, const CVector &v2)
