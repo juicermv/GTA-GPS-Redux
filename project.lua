@@ -6,6 +6,7 @@ end
 
 local project
 local PLUGIN_SDK_DIR
+local SIMDStringX86 = workspace:download_zip("https://github.com/juicermv/SIMDString/releases/download/release/release.zip").."SIMDStringX86"
 
 if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     PLUGIN_SDK_DIR = workspace:download_zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/msvc.zip")
@@ -73,7 +74,7 @@ project.output = "SA.GPS.REDUX.asi"
 project.library_paths = {
     PLUGIN_SDK_DIR .. "/lib/plugin_sa/",
     "external/d3dx9",
-    "external/simdstring"
+    SIMDStringX86
 }
 
 project.include_paths = {
@@ -83,7 +84,7 @@ project.include_paths = {
     PLUGIN_SDK_DIR .. "/src/shared/",
     PLUGIN_SDK_DIR .. "/src/shared/game/",
     "external/mini/src",
-    "external/simdstring",
+    SIMDStringX86,
     "src"
 }
 
