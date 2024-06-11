@@ -1,3 +1,6 @@
 [submodule "external/simdstring"]
 	path = external/simdstring
 	url = https://github.com/RobloxResearch/SIMDString
+[submodule "external/mini"]
+	path = external/mini
+	url = https://github.com/juicermv/mINI
