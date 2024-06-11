@@ -15,7 +15,8 @@ if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     project.libraries = {
         "plugin.lib",
         "d3d9.lib",
-        "d3dx9.lib"
+        "d3dx9.lib",
+        "simdstring.lib"
     }
 
     project.compiler_flags = {
@@ -72,6 +73,7 @@ project.output = "SA.GPS.REDUX.asi"
 project.library_paths = {
     PLUGIN_SDK_DIR .. "/lib/plugin_sa/",
     "external/d3dx9",
+    "external/simdstring"
 }
 
 project.include_paths = {

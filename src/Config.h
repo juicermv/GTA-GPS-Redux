@@ -15,22 +15,22 @@ void ExtractColorFromString(SIMDString<64> in, CRGBA &out)
 
 		if (!didR)
 		{
-			out.r = (unsigned char)std::stoi(in.substr(0, pos));
+			out.r = (unsigned char)std::stoi(in.substr(0, pos).c_str());
 			didR = true;
 		}
 		else if (!didG)
 		{
-			out.g = (unsigned char)std::stoi(in.substr(0, pos));
+			out.g = (unsigned char)std::stoi(in.substr(0, pos).c_str());
 			didG = true;
 		}
 		else if (!didB)
 		{
-			out.b = (unsigned char)std::stoi(in.substr(0, pos));
+			out.b = (unsigned char)std::stoi(in.substr(0, pos).c_str());
 			didB = true;
 		}
 		else if (!didA)
 		{
-			out.a = (unsigned char)std::stoi(in.substr(0, pos));
+			out.a = (unsigned char)std::stoi(in.substr(0, pos).c_str());
 			didA = true;
 		}
 
