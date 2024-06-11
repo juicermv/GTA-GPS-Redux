@@ -6,7 +6,7 @@ end
 
 local project
 local PLUGIN_SDK_DIR
-local SIMDStringX86 = workspace:download_zip("https://github.com/juicermv/SIMDString/releases/download/release/release.zip").."SIMDStringX86"
+local SIMDStringX86 = workspace:download_zip("https://github.com/juicermv/SIMDString/releases/download/release/release.zip").."\\SIMDStringX86"
 
 if workspace.platform == "windows" and workspace:get("mingw") ~= "true" then
     PLUGIN_SDK_DIR = workspace:download_zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/msvc.zip")
