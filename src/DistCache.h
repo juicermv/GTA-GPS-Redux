@@ -89,7 +89,7 @@ class DistCache
 		{
 			while (cache.size() >= MAX_ITEMS)
 			{
-				cache.erase(cache.begin());
+				cache.clear();
 			}
 
 			float out = DistanceBetweenPoints(v1, v2);
@@ -109,7 +109,7 @@ class DistCache
 		{
 			while (cache2D.size() >= MAX_ITEMS)
 			{
-				cache2D.erase(cache2D.begin());
+				cache2D.clear();
 			}
 
 			float out = DistanceBetweenPoints(v1, v2);
@@ -117,4 +117,12 @@ class DistCache
 			return out;
 		}
 	}
+
+	/*
+	inline float GetDist2D(const CVector &v1, const CVector &v2)
+	{
+		return GetDist2D(CVector2D(v1.x, v1.z), CVector2D(v2.x, v2.z));
+	}
+	*/
+
 } distCache;

@@ -1,7 +1,7 @@
 #pragma once
 #include "../external/mini/src/mini/ini.h"
 
-void ExtractColorFromString(SIMDString<64> in, CRGBA &out)
+void ExtractColorFromString(std::string in, CRGBA &out)
 {
 	// Remove whitespace
 	in.erase(std::remove_if(in.begin(), in.end(), isspace), in.end());
