@@ -5,10 +5,10 @@
 class Logger
 {
   private:
-	unsigned short logLines = 0;
-	char stime[128] = "";
-	std::ofstream logfile;
 	bool enabled = false;
+	unsigned short logLines = 0;
+	std::ofstream logfile;
+	char stime[128] = "";
 
   public:
 	inline constexpr void Log(const char *val)

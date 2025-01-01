@@ -53,49 +53,6 @@
 class GPS
 {
   private:
-	// Config
-	Config cfg = Config("SA.GPS.CONF.ini");
-	Logger logger = Logger(false);
-	// These variables will be used for the gps route following the target blip
-	// set by the player
-	float targetDistance;
-	short targetNodesCount;
-
-	CVector destVec;
-
-	CNodeAddress t_ResultNodes[MAX_NODE_POINTS];
-	RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
-
-	// These will be used for mission objectives
-	float missionDistance;
-	short missionNodesCount;
-
-	CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
-	RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
-
-	char pathNodesToStream[1024];
-	int pathNodes[50000];
-
-	CPed *player;
-
-	bool renderMissionRoute;
-	bool renderTargetRoute;
-
-	CVector targetTracePos;
-
-	tRadarTrace *mTrace;
-
-	// Graphics stuff & temp variables moved from heap
-	CVector2D tmpNodePoints[MAX_NODE_POINTS];
-	CVector2D targetScreen;
-	CVector2D tmpPoint;
-	CVector2D dir;
-	float angle;
-	unsigned int vertIndex = 0;
-	CVector2D shift[2];
-	CPathNode *currentNode;
-	CVector nodePosn;
-
 	constexpr void DrawRadarOverlayHandle();
 	void GameEventHandle();
 	constexpr void DrawHudEventHandle();
@@ -112,6 +69,35 @@ class GPS
 					float &gpsDistance, RwIm2DVertex *lineVerts);
 
 	constexpr void renderMissionTrace(tRadarTrace *trace);
+
+	bool renderMissionRoute;
+	bool renderTargetRoute;
+	float targetDistance;
+	short targetNodesCount;
+	float angle;
+	unsigned int vertIndex = 0;
+	// These will be used for mission objectives
+	float missionDistance;
+	short missionNodesCount;
+	Config cfg = Config("SA.GPS.CONF.ini");
+	Logger logger = Logger(false);
+	CPed *player;
+	tRadarTrace *mTrace;
+	CPathNode *currentNode;
+	CVector destVec;
+	CVector targetTracePos;
+	CVector2D targetScreen;
+	CVector2D tmpPoint;
+	CVector2D dir;
+	CVector nodePosn;
+	CVector2D shift[2];
+	char pathNodesToStream[1024];
+	int pathNodes[50000];
+	CVector2D tmpNodePoints[MAX_NODE_POINTS];
+	CNodeAddress t_ResultNodes[MAX_NODE_POINTS];
+	RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
+	CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
+	RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
 
   public:
 	GPS();
