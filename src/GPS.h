@@ -52,23 +52,22 @@
 
 class GPS
 {
+  public:
+	GPS();
+	~GPS();
+
   private:
-	constexpr void DrawRadarOverlayHandle();
+	void Run();
 	void GameEventHandle();
 	constexpr void DrawHudEventHandle();
-
-	void Run();
-
 	constexpr bool CheckBMX(CPed *player);
 	constexpr bool NavEnabled(CPed *player);
-
+	constexpr void DrawRadarOverlayHandle();
+	constexpr void renderMissionTrace(tRadarTrace *trace);
 	// Self explanatory.
 	void calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
-
 	void renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,
 					float &gpsDistance, RwIm2DVertex *lineVerts);
-
-	constexpr void renderMissionTrace(tRadarTrace *trace);
 
 	bool renderMissionRoute;
 	bool renderTargetRoute;
@@ -98,8 +97,4 @@ class GPS
 	RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
 	CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
 	RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
-
-  public:
-	GPS();
-	~GPS();
 } GPSLineRedux;
