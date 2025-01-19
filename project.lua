@@ -1,5 +1,5 @@
-local PLUGIN_SDK_DIR = workspace:download_zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/msvc.zip")
-local SIMDStringX86 = workspace:download_zip("https://github.com/juicermv/SIMDString/releases/download/release/release.zip").."\\SIMDStringX86"
+local PLUGIN_SDK_DIR = network:zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/msvc.zip")
+local SIMDStringX86 = network:zip("https://github.com/juicermv/SIMDString/releases/download/release/release.zip").."\\SIMDStringX86"
 
 
 local project = Project(
