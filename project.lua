@@ -5,6 +5,7 @@ local SIMDStringX86 = network:zip("https://github.com/juicermv/SIMDString/releas
 local project = Project(
     "GPS Redux",
     "C++",
+
     "SA.GPS.REDUX.asi",
     filesystem:walk("src", false, {"cpp"}),
     {
@@ -65,7 +66,6 @@ local project = Project(
         "/OPT:REF",
         "/DLL"
     },
-    nil,
     nil,
     nil,
     "x86",

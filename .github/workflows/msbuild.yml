@@ -6,49 +6,48 @@
 name: MSBuild
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    workflow_dispatch:
+    push:
+        branches: ['main']
+    pull_request:
+        branches: ['main']
 
 env:
-  # Path to the solution file relative to the root of the project.
-  SOLUTION_FILE_PATH: GPSLine.sln
+    # Path to the solution file relative to the root of the project.
+    SOLUTION_FILE_PATH: GPSLine.sln
 
-  # Configuration type to build.
-  # You can convert this to a build matrix if you need coverage of multiple configuration types.
-  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-  BUILD_CONFIGURATION: GitHub
+    # Configuration type to build.
+    # You can convert this to a build matrix if you need coverage of multiple configuration types.
+    # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    BUILD_CONFIGURATION: GitHub
 
-  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  build:
-    runs-on: windows-latest
+    build:
+        runs-on: windows-latest
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Init & Update submodules
-      run: git submodule init && git submodule update
+            - name: Init & Update submodules
+              run: git submodule init && git submodule update
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+            - name: Add MSBuild to PATH
+              uses: microsoft/setup-msbuild@v2
 
-    - name: Download numake
-      run: gh release download indev -R juicermv/numake -p '*.exe' --dir "${{runner.temp}}"
-    
-    - name: Build using numake
-      working-directory: ${{env.GITHUB_WORKFLOW}}
-      run: ."${{runner.temp}}/numake.exe" build all
+            - name: Download numake
+              run: gh release download indev -R juicermv/numake -p '*.exe' --dir "${{runner.temp}}"
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: GPS_Redux
-        path: ./.numake/out/SA-GPS-Redux
-      
+            - name: Build using numake
+              working-directory: ${{env.GITHUB_WORKFLOW}}
+              run: ."${{runner.temp}}/numake.exe" build build_msvc
+
+            - name: Upload Artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: GPS_Redux
+                  path: ./.numake/out/SA-GPS-Redux
