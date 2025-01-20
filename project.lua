@@ -46,7 +46,8 @@ local project = Project(
         "_LA_SUPPORT", 
         "_DX9_SDK_INSTALLED", 
         "PLUGIN_SGV_10US",
-        "_USE_MATH_DEFINES"
+        "_USE_MATH_DEFINES",
+        "RW"
     },
     {
         "/Ox",
