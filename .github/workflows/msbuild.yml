@@ -50,4 +50,4 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: GPS_Redux
-                  path: ./.numake/out/SA-GPS-Redux
+                  path: "./numake/out/GPS Redux"
