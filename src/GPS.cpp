@@ -55,8 +55,8 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 		CRadar::TransformRadarPointToScreenSpace(posn, CVector2D(1.0f, 1.0f));
 		rect.right = static_cast<LONG>(posn.x - 2.0f);
 		rect.top = static_cast<LONG>(posn.y + 2.0f);
-		GetD3DDevice<IDirect3DDevice9>()->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
-		GetD3DDevice<IDirect3DDevice9>()->SetScissorRect(&rect);
+		reinterpret_cast<IDirect3DDevice9 *>(GetD3DDevice())->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+		reinterpret_cast<IDirect3DDevice9 *>(GetD3DDevice())->SetScissorRect(&rect);
 
 		scissorRect.Grow(rect.left, rect.right, rect.top, rect.bottom);
 	}
@@ -134,7 +134,7 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 	if (!FrontEndMenuManager.m_bDrawRadarOrMap &&
 		reinterpret_cast<D3DCAPS9 const *>(RwD3D9GetCaps())->RasterCaps & D3DPRASTERCAPS_SCISSORTEST)
 	{
-		GetD3DDevice<IDirect3DDevice9>()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+		reinterpret_cast<IDirect3DDevice9 *>(GetD3DDevice())->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 	}
 
 	gpsDistance += distCache.GetDist(player->GetPosition(), ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());

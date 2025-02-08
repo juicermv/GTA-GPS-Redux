@@ -1,5 +1,5 @@
 local PLUGIN_SDK_DIR = network:zip("https://github.com/juicermv/plugin-sdk/releases/latest/download/msvc.zip")
-local SIMDStringX86 = network:zip("https://github.com/juicermv/SIMDString/releases/download/release/msvc.zip")
+local SIMDStringX86 = network:zip("https://github.com/juicermv/SIMDString/releases/download/release/msvc.zip").."/SIMDStringX86"
 
 local project = Project(
     "GPS Redux",
