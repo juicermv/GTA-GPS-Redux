@@ -1,5 +1,114 @@
 #include "GPS.h"
 
+CRGBA SetupColor(short color, bool friendly, struct util::Config cfg)
+{
+	CRGBA clr;
+	if (cfg.ENABLE_CUSTOM_CLRS)
+	{
+		switch (color)
+		{
+		case 0: // RED
+			clr = cfg.CC_RED;
+			break;
+		case 1: // GREEN
+			clr = cfg.CC_GREEN;
+			break;
+		case 2: // BLUE
+			clr = cfg.CC_BLUE;
+			break;
+		case 3: // WHITE
+			clr = cfg.CC_WHITE;
+			break;
+		case 4: // YELLOW
+			clr = cfg.CC_YELLOW;
+			break;
+		case 5: // PURPLE
+			clr = cfg.CC_PURPLE;
+			break;
+		case 6: // CYAN
+			clr = cfg.CC_CYAN;
+			break;
+		case 7: // Depends on whether blip is friendly.
+			if (friendly)
+			{
+				// BLUE
+				clr = cfg.CC_BLUE;
+			}
+			else
+			{
+				// RED
+				clr = cfg.CC_RED;
+			}
+			break;
+		case 8: // DESTINATION
+			clr = cfg.CC_YELLOW;
+			break;
+		}
+	}
+	else
+		clr = CRadar::GetRadarTraceColour(color, 1, friendly);
+
+	if (color < 1 || color > 8)
+	{
+		clr = cfg.GPS_LINE_CLR;
+	}
+
+	return clr;
+}
+
+constexpr void Setup2dVertex(RwIm2DVertex &vertex, double x, double y, CRGBA &clr)
+{
+	vertex.x = x;
+	vertex.y = y;
+	vertex.u = vertex.v = 0.0f;
+	vertex.z = CSprite2d::NearScreenZ + 0.0001f;
+	vertex.rhw = CSprite2d::RecipNearClip;
+
+	vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, clr.a);
+}
+
+// Meters to yards.
+constexpr float mtoyard(float m)
+{
+	return m * 1.094f;
+}
+
+SIMDString<64> Float2String(float in, unsigned char precision = 2)
+{
+	std::ostringstream stream;
+	stream << std::fixed << std::setprecision(precision) << in;
+	return SIMDString<64>(stream.str());
+}
+
+SIMDString<64> makeDist(float dist, bool units)
+{
+	// 1 Unit of distance = 1 meter.
+	switch (units)
+	{
+	case 0:
+		if (dist > 999)
+		{
+			return Float2String(dist / 1000, 1) + " KM";
+		}
+		else
+		{
+			return Float2String(dist, 0) + " m";
+		}
+		break;
+	case 1:
+		dist = mtoyard(dist);
+		if (dist > 599)
+		{
+			return Float2String(dist / 1760, 1) + " Mi";
+		}
+		else
+		{
+			return Float2String(dist, 0) + " yrds";
+		}
+		break;
+	}
+}
+
 void GPS::calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance)
 {
 	ThePaths.DoPathSearch(
@@ -137,7 +246,7 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 		reinterpret_cast<IDirect3DDevice9 *>(GetD3DDevice())->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 	}
 
-	gpsDistance += distCache.GetDist(player->GetPosition(), ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
+	gpsDistance += this->distCache.GetDist(player->GetPosition(), ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
 }
 
 // Check whether on BMX, will always return false if bmx support is enabled.
@@ -151,7 +260,7 @@ constexpr bool GPS::CheckBMX(CPed *player)
 
 void GPS::Run()
 {
-	logger = Logger(cfg.LOGFILE_ENABLED);
+	logger = util::Logger(cfg.LOGFILE_ENABLED);
 
 	for (short i = 0; i < 1024; i++)
 	{
@@ -172,22 +281,14 @@ void GPS::Run()
 	plugin::patch::SetUInt(0x4518F8, 50000);
 	plugin::patch::SetUInt(0x4519B0, 49950);
 
-	plugin::Events::gameProcessEvent += [this]() { this->GameEventHandle(); };
+	plugin::Events::gameProcessEvent += [this]()
+	{ this->GameEventHandle(); };
 
-	plugin::Events::drawRadarOverlayEvent += [this]() { this->DrawRadarOverlayHandle(); };
+	plugin::Events::drawRadarOverlayEvent += [this]()
+	{ this->DrawRadarOverlayHandle(); };
 
-	plugin::Events::drawRadarEvent += [this]() { this->DrawHudEventHandle(); };
-}
-
-GPS::GPS()
-{
-	this->Run();
-}
-
-GPS::~GPS()
-{
-	delete mTrace;
-	delete player;
+	plugin::Events::drawRadarEvent += [this]()
+	{ this->DrawHudEventHandle(); };
 }
 
 constexpr void GPS::renderMissionTrace(tRadarTrace *trace)
@@ -247,6 +348,7 @@ constexpr void GPS::renderMissionTrace(tRadarTrace *trace)
 	if (renderMissionRoute)
 	{
 		this->calculatePath(destVec, missionNodesCount, m_ResultNodes, missionDistance);
+
 		this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes,
 						 missionDistance, m_LineVerts);
 	}
@@ -294,7 +396,7 @@ void GPS::GameEventHandle()
 	{
 		renderMissionRoute = mTrace->m_bInUse;
 		if (mTrace->m_nBlipDisplay < 2 ||
-			distCache.GetDist2D(player->GetPosition(), mTrace->m_vecPos) <= cfg.DISABLE_PROXIMITY)
+			this->distCache.GetDist2D(player->GetPosition(), mTrace->m_vecPos) <= cfg.DISABLE_PROXIMITY)
 		{
 			renderMissionRoute = false;
 		}
@@ -313,8 +415,8 @@ void GPS::GameEventHandle()
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter ==
 			HIWORD(FrontEndMenuManager.m_nTargetBlipIndex) &&
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay &&
-		distCache.GetDist2D(player->GetPosition(),
-							CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos) <=
+		this->distCache.GetDist2D(player->GetPosition(),
+								  CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos) <=
 			cfg.DISABLE_PROXIMITY)
 	{
 		CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
@@ -387,7 +489,7 @@ constexpr void GPS::DrawHudEventHandle()
 		CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, -1.0f));
 		CFont::PrintString(
 			point.x, point.y + 8.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f,
-			(char *)makeDist(distCache.GetDist(FindPlayerCoors(0), destVec), cfg.DISTANCE_UNITS).c_str());
+			(char *)makeDist(this->distCache.GetDist(FindPlayerCoors(0), destVec), cfg.DISTANCE_UNITS).c_str());
 	}
 
 	if (renderTargetRoute)
@@ -409,7 +511,7 @@ constexpr void GPS::DrawHudEventHandle()
 		CFont::PrintString(
 			point.x, point.y - 20.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f,
 			(char *)makeDist(
-				distCache.GetDist(
+				this->distCache.GetDist(
 					CVector(player->GetPosition()),
 					CVector(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)),
 				cfg.DISTANCE_UNITS)

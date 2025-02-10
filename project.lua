@@ -6,7 +6,7 @@ local project = Project(
     "C++",
 
     "SA.GPS.REDUX.asi",
-    filesystem:walk("src", false, {"cpp"}),
+    filesystem:walk("src", true, {"cpp"}),
     {
         ["README.md"] = "README.md",
         ["SA.GPS.CONF.ini"] = "SA.GPS.CONF.ini"

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 	Plugin-SDK (Grand Theft Auto) source file
 	Authors: GTA Community. See more here
@@ -13,6 +15,8 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <SIMDString.h>
+#include <future>
 
 #include "CFont.h"
 #include "CGeneral.h"
@@ -33,10 +37,9 @@
 #include "d3d9.h"
 #include "plugin.h"
 
-#include "Config.h"
-#include "DistCache.h"
-#include "Logger.h"
-#include "util.h"
+#include "util/Config.h"
+#include "util/DistCache.h"
+#include "util/Logger.h"
 
 /*
 	#define MAX_NODE_POINTS 50000
@@ -52,11 +55,7 @@
 
 class GPS
 {
-  public:
-	GPS();
-	~GPS();
-
-  private:
+private:
 	void Run();
 	void GameEventHandle();
 	constexpr void DrawHudEventHandle();
@@ -78,8 +77,9 @@ class GPS
 	// These will be used for mission objectives
 	float missionDistance;
 	short missionNodesCount;
-	Config cfg = Config("SA.GPS.CONF.ini");
-	Logger logger = Logger(false);
+	util::Config cfg = util::Config("SA.GPS.CONF.ini");
+	util::Logger logger = util::Logger(false);
+	util::DistCache distCache = util::DistCache();
 	CPed *player;
 	tRadarTrace *mTrace;
 	CPathNode *currentNode;
@@ -97,4 +97,10 @@ class GPS
 	RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
 	CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
 	RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
+
+public:
+	inline GPS()
+	{
+		this->Run();
+	}
 } GPSLineRedux;
