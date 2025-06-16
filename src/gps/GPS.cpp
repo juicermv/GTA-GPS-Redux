@@ -1,127 +1,10 @@
 #include "GPS.h"
+#include "gps/PathFinder.h"
+#include "gps/RenderUtils.h"
+#include "gps/DistanceFormatter.h"
 
-CRGBA SetupColor(short color, bool friendly, struct util::Config cfg)
-{
-	CRGBA clr;
-	if (cfg.ENABLE_CUSTOM_CLRS)
-	{
-		switch (color)
-		{
-		case 0: // RED
-			clr = cfg.CC_RED;
-			break;
-		case 1: // GREEN
-			clr = cfg.CC_GREEN;
-			break;
-		case 2: // BLUE
-			clr = cfg.CC_BLUE;
-			break;
-		case 3: // WHITE
-			clr = cfg.CC_WHITE;
-			break;
-		case 4: // YELLOW
-			clr = cfg.CC_YELLOW;
-			break;
-		case 5: // PURPLE
-			clr = cfg.CC_PURPLE;
-			break;
-		case 6: // CYAN
-			clr = cfg.CC_CYAN;
-			break;
-		case 7: // Depends on whether blip is friendly.
-			if (friendly)
-			{
-				// BLUE
-				clr = cfg.CC_BLUE;
-			}
-			else
-			{
-				// RED
-				clr = cfg.CC_RED;
-			}
-			break;
-		case 8: // DESTINATION
-			clr = cfg.CC_YELLOW;
-			break;
-		}
-	}
-	else
-		clr = CRadar::GetRadarTraceColour(color, 1, friendly);
-
-	if (color < 1 || color > 8)
-	{
-		clr = cfg.GPS_LINE_CLR;
-	}
-
-	return clr;
-}
-
-constexpr void Setup2dVertex(RwIm2DVertex &vertex, double x, double y, CRGBA &clr)
-{
-	vertex.x = x;
-	vertex.y = y;
-	vertex.u = vertex.v = 0.0f;
-	vertex.z = CSprite2d::NearScreenZ + 0.0001f;
-	vertex.rhw = CSprite2d::RecipNearClip;
-
-	vertex.emissiveColor = RWRGBALONG(clr.r, clr.g, clr.b, clr.a);
-}
-
-// Meters to yards.
-constexpr float mtoyard(float m)
-{
-	return m * 1.094f;
-}
-
-SIMDString<64> Float2String(float in, unsigned char precision = 2)
-{
-	std::ostringstream stream;
-	stream << std::fixed << std::setprecision(precision) << in;
-	return SIMDString<64>(stream.str());
-}
-
-SIMDString<64> makeDist(float dist, bool units)
-{
-	// 1 Unit of distance = 1 meter.
-	switch (units)
-	{
-	case 0:
-		if (dist > 999)
-		{
-			return Float2String(dist / 1000, 1) + " KM";
-		}
-		else
-		{
-			return Float2String(dist, 0) + " m";
-		}
-		break;
-	case 1:
-		dist = mtoyard(dist);
-		if (dist > 599)
-		{
-			return Float2String(dist / 1760, 1) + " Mi";
-		}
-		else
-		{
-			return Float2String(dist, 0) + " yrds";
-		}
-		break;
-	}
-}
-
-void GPS::calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance)
-{
-	ThePaths.DoPathSearch(
-		0, player->GetPosition(), CNodeAddress(), destPosn, resultNodes, &nodesCount, MAX_NODE_POINTS, &gpsDistance,
-		999999.0f, NULL, 999999.0f,
-		(player->m_pVehicle->m_nVehicleSubClass != VEHICLE_BOAT &&
-		 player->m_pVehicle->m_nVehicleSubClass != VEHICLE_BMX // Respect rules of traffic. (only if in valid
-															   // vehicle & enabled in config)
-		 && cfg.RESPECT_LANE_DIRECTION),
-		CNodeAddress(), false,
-		(player->m_pVehicle->m_nVehicleSubClass == VEHICLE_BOAT &&
-		 cfg.ENABLE_WATER_GPS) // Whether to do water navigation
-	);
+GPS::GPS() : cfg("SA.GPS.CONF.ini"), logger(false), distCache(), pathFinder(cfg) {
+    Run();
 }
 
 void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,
@@ -172,13 +55,13 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 
 	RwRenderStateSet(rwRENDERSTATETEXTURERASTER, NULL);
 
-	CRGBA vColor = SetupColor(color, friendly, cfg);
+	CRGBA vColor = gps::RenderUtils::SetupColor(color, friendly, cfg);
 
 	// Create vertices for nodes
 	vertIndex = 0;
 	for (unsigned short i = 0; i < nodesCount - 1; i++)
 	{
-		vColor = SetupColor(color, friendly, cfg);
+		vColor = gps::RenderUtils::SetupColor(color, friendly, cfg);
 
 		dir = tmpNodePoints[i + 1] - tmpNodePoints[i]; // Direction between current node to next
 													   // node
@@ -211,25 +94,25 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 		if (scissorRect.IsPointInside(tmpNodePoints[i]) ||
 			(scissorRect.bottom + scissorRect.top + scissorRect.left + scissorRect.right) == 0)
 		{
-			Setup2dVertex(						 //
+			gps::RenderUtils::Setup2dVertex(						 //
 				lineVerts[vertIndex + 0],		 //
 				tmpNodePoints[i].x + shift[0].x, // CurrentNode*
 				tmpNodePoints[i].y + shift[0].y, //
 				vColor);
 
-			Setup2dVertex(						 //
+			gps::RenderUtils::Setup2dVertex(						 //
 				lineVerts[vertIndex + 1],		 //
 				tmpNodePoints[i].x + shift[1].x, // CurrentNode - CurrentNode*
 				tmpNodePoints[i].y + shift[1].y, //
 				vColor);
 
-			Setup2dVertex(							 // NextNode*
+			gps::RenderUtils::Setup2dVertex(							 // NextNode*
 				lineVerts[vertIndex + 2],			 //    |
 				tmpNodePoints[i + 1].x + shift[0].x, // CurrentNode - CurrentNode
 				tmpNodePoints[i + 1].y + shift[0].y, //
 				vColor);
 
-			Setup2dVertex(lineVerts[vertIndex + 3],			   // NextNode - NextNode*
+			gps::RenderUtils::Setup2dVertex(lineVerts[vertIndex + 3],			   // NextNode - NextNode*
 						  tmpNodePoints[i + 1].x + shift[1].x, //    | |
 						  tmpNodePoints[i + 1].y + shift[1].y, // CurrentNode - CurrentNode
 						  vColor);
@@ -347,7 +230,7 @@ constexpr void GPS::renderMissionTrace(tRadarTrace *trace)
 	// std::to_string(destVec.y));
 	if (renderMissionRoute)
 	{
-		this->calculatePath(destVec, missionNodesCount, m_ResultNodes, missionDistance);
+		this->pathFinder.Calculate(destVec, missionNodesCount, m_ResultNodes, missionDistance);
 
 		this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes,
 						 missionDistance, m_LineVerts);
@@ -430,7 +313,7 @@ void GPS::GameEventHandle()
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
 	{
 		targetTracePos = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
-		this->calculatePath(targetTracePos, targetNodesCount, t_ResultNodes, targetDistance);
+		this->pathFinder.Calculate(targetTracePos, targetNodesCount, t_ResultNodes, targetDistance);
 		renderTargetRoute = true;
 	}
 
@@ -475,7 +358,7 @@ constexpr void GPS::DrawHudEventHandle()
 	if (renderMissionRoute)
 	{
 		CFont::SetOrientation(ALIGN_CENTER);
-		CFont::SetColor(SetupColor(this->mTrace->m_nColour, this->mTrace->m_bFriendly, cfg));
+		CFont::SetColor(gps::RenderUtils::SetupColor(this->mTrace->m_nColour, this->mTrace->m_bFriendly, cfg));
 		CFont::SetBackground(false, false);
 		CFont::SetWrapx(500.0f);
 		CFont::SetScale(0.3f * static_cast<float>(RsGlobal.maximumWidth) / 640.0f,
@@ -489,7 +372,7 @@ constexpr void GPS::DrawHudEventHandle()
 		CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, -1.0f));
 		CFont::PrintString(
 			point.x, point.y + 8.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f,
-			(char *)makeDist(this->distCache.GetDist(FindPlayerCoors(0), destVec), cfg.DISTANCE_UNITS).c_str());
+			(char *)gps::DistanceFormatter::FormatDistance(this->distCache.GetDist(FindPlayerCoors(0), destVec), cfg.DISTANCE_UNITS).c_str());
 	}
 
 	if (renderTargetRoute)
@@ -510,7 +393,7 @@ constexpr void GPS::DrawHudEventHandle()
 		CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, 1.0f));
 		CFont::PrintString(
 			point.x, point.y - 20.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f,
-			(char *)makeDist(
+			(char *)gps::DistanceFormatter::FormatDistance(
 				this->distCache.GetDist(
 					CVector(player->GetPosition()),
 					CVector(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)),
@@ -518,3 +401,5 @@ constexpr void GPS::DrawHudEventHandle()
 				.c_str());
 	}
 }
+
+gps::GPS GPSLineRedux;
