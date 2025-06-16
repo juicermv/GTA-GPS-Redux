@@ -1,7 +1,6 @@
 #pragma once
-#include "Config.h"
-#include <chrono>
 #include <fstream>
+#include <chrono>
 
 namespace util
 {

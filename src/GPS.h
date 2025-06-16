@@ -6,17 +6,16 @@
 	https://github.com/DK22Pac/plugin-sdk
 	Do not delete this comment block. Respect others' work!
 */
+
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <ctime>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <limits>
-#include <SIMDString.h>
 #include <future>
+#include <algorithm>
 
 #include "CFont.h"
 #include "CGeneral.h"
@@ -31,15 +30,18 @@
 #include "CTheScripts.h"
 #include "CVehicle.h"
 #include "CWorld.h"
-#include "Color.h"
 #include "RenderWare.h"
-#include "common.h"
 #include "d3d9.h"
 #include "plugin.h"
+#include "common.h"
+#include "Color.h"
 
 #include "util/Config.h"
 #include "util/DistCache.h"
 #include "util/Logger.h"
+#include "util/Render.h"
+#include "util/Misc.h"
+#include "util/Bools.h"
 
 /*
 	#define MAX_NODE_POINTS 50000
@@ -59,8 +61,6 @@ private:
 	void Run();
 	void GameEventHandle();
 	constexpr void DrawHudEventHandle();
-	constexpr bool CheckBMX(CPed *player);
-	constexpr bool NavEnabled(CPed *player);
 	constexpr void DrawRadarOverlayHandle();
 	constexpr void renderMissionTrace(tRadarTrace *trace);
 	// Self explanatory.

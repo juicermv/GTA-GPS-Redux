@@ -1,8 +1,8 @@
 #pragma once
-#include <CVector.h>
-#include <CVector2D.h>
-#include <algorithm>
 #include <unordered_map>
+
+#include "CVector2D.h"
+#include "CVector.h"
 
 #define MAX_ITEMS 10
 

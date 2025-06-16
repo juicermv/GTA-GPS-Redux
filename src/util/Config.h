@@ -1,6 +1,6 @@
 #pragma once
-#include "../../external/mini/src/mini/ini.h"
-#include <CRGBA.h>
+#include "mini/ini.h"
+#include "CRGBA.h"
 
 namespace util
 {
