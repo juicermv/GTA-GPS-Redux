@@ -17,6 +17,8 @@
 #include <future>
 #include <algorithm>
 #include <array>
+#include <mutex>
+#include <chrono>
 
 #include "CFont.h"
 #include "CGeneral.h"
@@ -61,13 +63,15 @@ class GPS
 private:
 	void Run();
 	void GameEventHandle();
-	constexpr void DrawHudEventHandle();
-	constexpr void DrawRadarOverlayHandle();
-	constexpr void renderMissionTrace(tRadarTrace *trace);
-	// Self explanatory.
-	void calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
-	void renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,
-					float &gpsDistance, RwIm2DVertex *lineVerts);
+        void DrawHudEventHandle();
+        void DrawRadarOverlayHandle();
+        void renderMissionTrace(tRadarTrace *trace);
+        // Self explanatory.
+        void calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
+        void requestTargetPath(CVector destPosn);
+        void requestMissionPath(CVector destPosn);
+        void renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,
+                                        float &gpsDistance, RwIm2DVertex *lineVerts);
 
 	bool renderMissionRoute;
 	bool renderTargetRoute;
@@ -96,8 +100,11 @@ private:
 	std::array<CVector2D, MAX_NODE_POINTS> tmpNodePoints{};
 	std::array<CNodeAddress, MAX_NODE_POINTS> t_ResultNodes{};
 	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> t_LineVerts{};
-	std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
-	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> m_LineVerts{};
+        std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
+        std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> m_LineVerts{};
+        std::future<void> targetFuture;
+        std::future<void> missionFuture;
+        std::mutex pathMutex;
 
 public:
 	inline GPS()
