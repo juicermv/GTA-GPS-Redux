@@ -4,22 +4,15 @@ void GPS::Run()
 {
 	logger = util::Logger(cfg.LOGFILE_ENABLED);
 
-	for (short i = 0; i < 1024; i++)
-	{
-		pathNodesToStream[i] = 1;
-	}
+	std::fill(std::begin(pathNodesToStream), std::end(pathNodesToStream), 1);
+	std::fill(std::begin(pathNodes), std::end(pathNodes), -1);
 
-	for (unsigned short i = 0; i < 50000; i++)
-	{
-		pathNodes[i] = -1;
-	}
-
-	plugin::patch::SetPointer(0x44DE3C, &pathNodesToStream);
-	plugin::patch::SetPointer(0x450D03, &pathNodesToStream);
-	plugin::patch::SetPointer(0x451782, &pathNodes);
-	plugin::patch::SetPointer(0x451904, &pathNodes);
-	plugin::patch::SetPointer(0x451AC3, &pathNodes);
-	plugin::patch::SetPointer(0x451B33, &pathNodes);
+	plugin::patch::SetPointer(0x44DE3C, pathNodesToStream.data());
+	plugin::patch::SetPointer(0x450D03, pathNodesToStream.data());
+	plugin::patch::SetPointer(0x451782, pathNodes.data());
+	plugin::patch::SetPointer(0x451904, pathNodes.data());
+	plugin::patch::SetPointer(0x451AC3, pathNodes.data());
+	plugin::patch::SetPointer(0x451B33, pathNodes.data());
 	plugin::patch::SetUInt(0x4518F8, 50000);
 	plugin::patch::SetUInt(0x4519B0, 49950);
 
@@ -56,7 +49,7 @@ constexpr void GPS::DrawRadarOverlayHandle()
 		return;
 
 	if (renderTargetRoute)
-		this->renderPath(targetTracePos, -1, false, targetNodesCount, t_ResultNodes, targetDistance, t_LineVerts);
+		this->renderPath(targetTracePos, -1, false, targetNodesCount, t_ResultNodes.data(), targetDistance, t_LineVerts.data());
 
 	if (renderMissionRoute)
 	{
@@ -118,7 +111,7 @@ void GPS::GameEventHandle()
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
 	{
 		targetTracePos = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
-		this->calculatePath(targetTracePos, targetNodesCount, t_ResultNodes, targetDistance);
+		this->calculatePath(targetTracePos, targetNodesCount, t_ResultNodes.data(), targetDistance);
 		renderTargetRoute = true;
 	}
 
@@ -390,9 +383,9 @@ constexpr void GPS::renderMissionTrace(tRadarTrace *trace)
 	// std::to_string(destVec.y));
 	if (renderMissionRoute)
 	{
-		this->calculatePath(destVec, missionNodesCount, m_ResultNodes, missionDistance);
+		this->calculatePath(destVec, missionNodesCount, m_ResultNodes.data(), missionDistance);
 
-		this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes,
-						 missionDistance, m_LineVerts);
+		this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes.data(),
+						 missionDistance, m_LineVerts.data());
 	}
 }

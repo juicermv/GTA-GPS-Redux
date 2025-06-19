@@ -32,8 +32,8 @@ struct CVector2DPair
 
 	bool operator<(const CVector2DPair &a_pair) const noexcept
 	{
-		CVector2D sum1 = CVector2D(v1.x + v2.x, v1.y + v1.y);
-		CVector2D sum2 = CVector2D(a_pair.v1.x + a_pair.v2.x, a_pair.v2.y + a_pair.v2.y);
+                CVector2D sum1 = CVector2D(v1.x + v2.x, v1.y + v2.y);
+                CVector2D sum2 = CVector2D(a_pair.v1.x + a_pair.v2.x, a_pair.v1.y + a_pair.v2.y);
 
 		return sum1.Magnitude() < sum2.Magnitude();
 	};
@@ -74,15 +74,17 @@ namespace std
 
 namespace util
 {
-	class DistCache
-	{
-	private:
-		std::unordered_map<CVectorPair, float> cache{};
-		std::unordered_map<CVector2DPair, float> cache2D{};
+        class DistCache
+        {
+        private:
+                std::unordered_map<CVectorPair, float> cache{};
+                std::unordered_map<CVector2DPair, float> cache2D{};
 
-	public:
-		float GetDist(const CVector &v1, const CVector &v2);
-		float GetDist2D(const CVector2D &v1, const CVector2D &v2);
+        public:
+                DistCache();
+
+                float GetDist(const CVector &v1, const CVector &v2);
+                float GetDist2D(const CVector2D &v1, const CVector2D &v2);
 
 		/*
 		inline float GetDist2D(const CVector &v1, const CVector &v2)
