@@ -40,7 +40,6 @@
 
 #include "util/Bools.h"
 #include "util/Config.h"
-#include "util/DistCache.h"
 #include "util/Logger.h"
 #include "util/Misc.h"
 #include "util/Render.h"
@@ -83,7 +82,6 @@ class GPS
 	short missionNodesCount;
 	util::Config cfg = util::Config("SA.GPS.CONF.ini");
 	util::Logger logger = util::Logger(false);
-	util::DistCache distCache = util::DistCache();
 	CPed *player;
 	tRadarTrace *mTrace;
 	CPathNode *currentNode;

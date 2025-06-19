@@ -116,7 +116,7 @@ void GPS::GameEventHandle()
 	{
 		renderMissionRoute = mTrace->m_bInUse;
 		if (mTrace->m_nBlipDisplay < 2 ||
-			this->distCache.GetDist2D(player->GetPosition(), mTrace->m_vecPos) <= cfg.DISABLE_PROXIMITY)
+			DistanceBetweenPoints(player->GetPosition(), mTrace->m_vecPos) <= cfg.DISABLE_PROXIMITY)
 		{
 			renderMissionRoute = false;
 		}
@@ -135,8 +135,8 @@ void GPS::GameEventHandle()
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nCounter ==
 			HIWORD(FrontEndMenuManager.m_nTargetBlipIndex) &&
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay &&
-		this->distCache.GetDist2D(player->GetPosition(),
-								  CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos) <=
+		DistanceBetweenPoints(player->GetPosition(),
+							  CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos) <=
 			cfg.DISABLE_PROXIMITY)
 	{
 		CRadar::ClearBlip(FrontEndMenuManager.m_nTargetBlipIndex);
@@ -154,40 +154,40 @@ void GPS::GameEventHandle()
 		renderTargetRoute = true;
 	}
 
-        try
-        {
-                if (CTheScripts::IsPlayerOnAMission())
-                {
-                        float bestDist = std::numeric_limits<float>::infinity();
-                        tRadarTrace *bestTrace = nullptr;
+	try
+	{
+		if (CTheScripts::IsPlayerOnAMission())
+		{
+			float bestDist = std::numeric_limits<float>::infinity();
+			tRadarTrace *bestTrace = nullptr;
 
-                        for (int i = 0; i < 175; ++i)
-                        {
-                                tRadarTrace *trace = &CRadar::ms_RadarTrace[i];
-                                if (trace && trace->m_nRadarSprite == 0 && trace->m_nBlipDisplay > 1)
-                                {
-                                        float d = this->distCache.GetDist2D(player->GetPosition(), trace->m_vecPos);
-                                        if (d < bestDist)
-                                        {
-                                                bestDist = d;
-                                                bestTrace = trace;
-                                        }
-                                }
-                        }
+			for (int i = 0; i < 175; ++i)
+			{
+				tRadarTrace *trace = &CRadar::ms_RadarTrace[i];
+				if (trace && trace->m_nRadarSprite == 0 && trace->m_nBlipDisplay > 1)
+				{
+					float d = DistanceBetweenPoints(player->GetPosition(), trace->m_vecPos);
+					if (d < bestDist)
+					{
+						bestDist = d;
+						bestTrace = trace;
+					}
+				}
+			}
 
-                        mTrace = bestTrace;
-                        renderMissionRoute = bestTrace != nullptr;
-                }
-                else
-                {
-                        renderMissionRoute = false;
-                }
-        }
-        catch (const std::exception &e)
-        {
-                logger.Log(e.what());
-                renderMissionRoute = false;
-        }
+			mTrace = bestTrace;
+			renderMissionRoute = bestTrace != nullptr;
+		}
+		else
+		{
+			renderMissionRoute = false;
+		}
+	}
+	catch (const std::exception &e)
+	{
+		logger.Log(e.what());
+		renderMissionRoute = false;
+	}
 }
 
 void GPS::DrawHudEventHandle()
@@ -215,7 +215,7 @@ void GPS::DrawHudEventHandle()
 		CRadar::TransformRadarPointToScreenSpace(point, CVector2D(0.0f, -1.0f));
 		CFont::PrintString(
 			point.x, point.y + 8.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f,
-			(char *)util::makeDist(this->distCache.GetDist(FindPlayerCoors(0), destVec), cfg.DISTANCE_UNITS).c_str());
+			(char *)util::makeDist(DistanceBetweenPoints(FindPlayerCoors(0), destVec), cfg.DISTANCE_UNITS).c_str());
 	}
 
 	if (renderTargetRoute)
@@ -237,7 +237,7 @@ void GPS::DrawHudEventHandle()
 		CFont::PrintString(
 			point.x, point.y - 20.0f * static_cast<float>(RsGlobal.maximumHeight) / 448.0f,
 			(char *)util::makeDist(
-				this->distCache.GetDist(
+				DistanceBetweenPoints(
 					CVector(player->GetPosition()),
 					CVector(CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos)),
 				cfg.DISTANCE_UNITS)
@@ -369,7 +369,7 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 		reinterpret_cast<IDirect3DDevice9 *>(GetD3DDevice())->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 	}
 
-	gpsDistance += this->distCache.GetDist(player->GetPosition(), ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
+	gpsDistance += DistanceBetweenPoints(player->GetPosition(), ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
 }
 
 void GPS::renderMissionTrace(tRadarTrace *trace)
