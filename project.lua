@@ -4,7 +4,6 @@ local SIMDStringX86 = network:zip("https://github.com/juicermv/SIMDString/releas
 local project = Project(
     "GPS Redux",
     "C++",
-
     "SA.GPS.REDUX.asi",
     filesystem:walk("src", true, {"cpp"}),
     {
