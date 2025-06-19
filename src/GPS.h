@@ -6,17 +6,18 @@
 	https://github.com/DK22Pac/plugin-sdk
 	Do not delete this comment block. Respect others' work!
 */
+
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <ctime>
-#include <fstream>
+#include <future>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <limits>
-#include <SIMDString.h>
-#include <future>
+#include <mutex>
 
 #include "CFont.h"
 #include "CGeneral.h"
@@ -37,9 +38,11 @@
 #include "d3d9.h"
 #include "plugin.h"
 
+#include "util/Bools.h"
 #include "util/Config.h"
-#include "util/DistCache.h"
 #include "util/Logger.h"
+#include "util/Misc.h"
+#include "util/Render.h"
 
 /*
 	#define MAX_NODE_POINTS 50000
@@ -55,16 +58,16 @@
 
 class GPS
 {
-private:
+  private:
 	void Run();
 	void GameEventHandle();
-	constexpr void DrawHudEventHandle();
-	constexpr bool CheckBMX(CPed *player);
-	constexpr bool NavEnabled(CPed *player);
-	constexpr void DrawRadarOverlayHandle();
-	constexpr void renderMissionTrace(tRadarTrace *trace);
+	void DrawHudEventHandle();
+	void DrawRadarOverlayHandle();
+	void renderMissionTrace(tRadarTrace *trace);
 	// Self explanatory.
 	void calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
+	void requestTargetPath(CVector destPosn);
+	void requestMissionPath(CVector destPosn);
 	void renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,
 					float &gpsDistance, RwIm2DVertex *lineVerts);
 
@@ -79,7 +82,6 @@ private:
 	short missionNodesCount;
 	util::Config cfg = util::Config("SA.GPS.CONF.ini");
 	util::Logger logger = util::Logger(false);
-	util::DistCache distCache = util::DistCache();
 	CPed *player;
 	tRadarTrace *mTrace;
 	CPathNode *currentNode;
@@ -90,15 +92,18 @@ private:
 	CVector2D dir;
 	CVector nodePosn;
 	CVector2D shift[2];
-	char pathNodesToStream[1024];
-	int pathNodes[50000];
-	CVector2D tmpNodePoints[MAX_NODE_POINTS];
-	CNodeAddress t_ResultNodes[MAX_NODE_POINTS];
-	RwIm2DVertex t_LineVerts[MAX_NODE_POINTS * 4];
-	CNodeAddress m_ResultNodes[MAX_NODE_POINTS];
-	RwIm2DVertex m_LineVerts[MAX_NODE_POINTS * 4];
+	std::array<char, 1024> pathNodesToStream{};
+	std::array<int, 50000> pathNodes{};
+	std::array<CVector2D, MAX_NODE_POINTS> tmpNodePoints{};
+	std::array<CNodeAddress, MAX_NODE_POINTS> t_ResultNodes{};
+	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> t_LineVerts{};
+	std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
+	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> m_LineVerts{};
+	std::future<void> targetFuture;
+	std::future<void> missionFuture;
+	std::mutex pathMutex;
 
-public:
+  public:
 	inline GPS()
 	{
 		this->Run();
