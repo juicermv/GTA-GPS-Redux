@@ -154,34 +154,40 @@ void GPS::GameEventHandle()
 		renderTargetRoute = true;
 	}
 
-	try
-	{
-		if (CTheScripts::IsPlayerOnAMission())
-		{
-			for (int i = 0; i < 175; i++)
-			{
-				tRadarTrace *trace = &CRadar::ms_RadarTrace[i];
-				if (trace)
-				{
-					if (trace->m_nRadarSprite == 0 && trace->m_nBlipDisplay > 1)
-					{
-						mTrace = trace;
-						renderMissionRoute = true;
-						break;
-					}
-				}
-			}
-		}
-		else
-		{
-			renderMissionRoute = false;
-		}
-	}
-	catch (const std::exception &e)
-	{
-		logger.Log(e.what());
-		renderMissionRoute = false;
-	}
+        try
+        {
+                if (CTheScripts::IsPlayerOnAMission())
+                {
+                        float bestDist = std::numeric_limits<float>::infinity();
+                        tRadarTrace *bestTrace = nullptr;
+
+                        for (int i = 0; i < 175; ++i)
+                        {
+                                tRadarTrace *trace = &CRadar::ms_RadarTrace[i];
+                                if (trace && trace->m_nRadarSprite == 0 && trace->m_nBlipDisplay > 1)
+                                {
+                                        float d = this->distCache.GetDist2D(player->GetPosition(), trace->m_vecPos);
+                                        if (d < bestDist)
+                                        {
+                                                bestDist = d;
+                                                bestTrace = trace;
+                                        }
+                                }
+                        }
+
+                        mTrace = bestTrace;
+                        renderMissionRoute = bestTrace != nullptr;
+                }
+                else
+                {
+                        renderMissionRoute = false;
+                }
+        }
+        catch (const std::exception &e)
+        {
+                logger.Log(e.what());
+                renderMissionRoute = false;
+        }
 }
 
 void GPS::DrawHudEventHandle()
