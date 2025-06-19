@@ -1,8 +1,8 @@
 #pragma once
 #include <unordered_map>
 
-#include "CVector2D.h"
 #include "CVector.h"
+#include "CVector2D.h"
 
 #define MAX_ITEMS 10
 
@@ -32,8 +32,8 @@ struct CVector2DPair
 
 	bool operator<(const CVector2DPair &a_pair) const noexcept
 	{
-                CVector2D sum1 = CVector2D(v1.x + v2.x, v1.y + v2.y);
-                CVector2D sum2 = CVector2D(a_pair.v1.x + a_pair.v2.x, a_pair.v1.y + a_pair.v2.y);
+		CVector2D sum1 = CVector2D(v1.x + v2.x, v1.y + v2.y);
+		CVector2D sum2 = CVector2D(a_pair.v1.x + a_pair.v2.x, a_pair.v1.y + a_pair.v2.y);
 
 		return sum1.Magnitude() < sum2.Magnitude();
 	};
@@ -47,50 +47,48 @@ struct CVector2DPair
 
 namespace std
 {
-	template <>
-	class hash<CVectorPair>
+template <> class hash<CVectorPair>
+{
+  public:
+	std::size_t operator()(const CVectorPair &pair) const
 	{
-	public:
-		std::size_t operator()(const CVectorPair &pair) const
-		{
-			return (size_t)((size_t)pair.v1.MagnitudeSqr2D() ^
-							(size_t)((pair.v1 + pair.v2).Magnitude()) - (size_t)pair.v2.MagnitudeSqr2D());
-		}
-	};
+		return (size_t)((size_t)pair.v1.MagnitudeSqr2D() ^
+						(size_t)((pair.v1 + pair.v2).Magnitude()) - (size_t)pair.v2.MagnitudeSqr2D());
+	}
+};
 
-	template <>
-	class hash<CVector2DPair>
+template <> class hash<CVector2DPair>
+{
+  public:
+	std::size_t operator()(const CVector2DPair &pair) const
 	{
-	public:
-		std::size_t operator()(const CVector2DPair &pair) const
-		{
-			return (size_t)((size_t)pair.v1.MagnitudeSqr() ^
-							(size_t)CVector2D(pair.v1.x + pair.v2.x, pair.v1.y + pair.v2.y).Magnitude()) -
-				   (size_t)pair.v2.MagnitudeSqr();
-		}
-	};
+		return (size_t)((size_t)pair.v1.MagnitudeSqr() ^
+						(size_t)CVector2D(pair.v1.x + pair.v2.x, pair.v1.y + pair.v2.y).Magnitude()) -
+			   (size_t)pair.v2.MagnitudeSqr();
+	}
+};
 
 } // namespace std
 
 namespace util
 {
-        class DistCache
-        {
-        private:
-                std::unordered_map<CVectorPair, float> cache{};
-                std::unordered_map<CVector2DPair, float> cache2D{};
+class DistCache
+{
+  private:
+	std::unordered_map<CVectorPair, float> cache{};
+	std::unordered_map<CVector2DPair, float> cache2D{};
 
-        public:
-                DistCache();
+  public:
+	DistCache();
 
-                float GetDist(const CVector &v1, const CVector &v2);
-                float GetDist2D(const CVector2D &v1, const CVector2D &v2);
+	float GetDist(const CVector &v1, const CVector &v2);
+	float GetDist2D(const CVector2D &v1, const CVector2D &v2);
 
-		/*
-		inline float GetDist2D(const CVector &v1, const CVector &v2)
-		{
-			return GetDist2D(CVector2D(v1.x, v1.z), CVector2D(v2.x, v2.z));
-		}
-		*/
-	};
-}
+	/*
+	inline float GetDist2D(const CVector &v1, const CVector &v2)
+	{
+		return GetDist2D(CVector2D(v1.x, v1.z), CVector2D(v2.x, v2.z));
+	}
+	*/
+};
+} // namespace util

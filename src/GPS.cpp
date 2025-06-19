@@ -16,14 +16,11 @@ void GPS::Run()
 	plugin::patch::SetUInt(0x4518F8, 50000);
 	plugin::patch::SetUInt(0x4519B0, 49950);
 
-	plugin::Events::gameProcessEvent += [this]()
-	{ this->GameEventHandle(); };
+	plugin::Events::gameProcessEvent += [this]() { this->GameEventHandle(); };
 
-	plugin::Events::drawRadarOverlayEvent += [this]()
-	{ this->DrawRadarOverlayHandle(); };
+	plugin::Events::drawRadarOverlayEvent += [this]() { this->DrawRadarOverlayHandle(); };
 
-	plugin::Events::drawRadarEvent += [this]()
-	{ this->DrawHudEventHandle(); };
+	plugin::Events::drawRadarEvent += [this]() { this->DrawHudEventHandle(); };
 }
 
 void GPS::calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance)
@@ -41,15 +38,57 @@ void GPS::calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resul
 	);
 }
 
+void GPS::requestTargetPath(CVector destPosn)
+{
+	if (targetFuture.valid() && targetFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+		return;
+
+	targetFuture = std::async(std::launch::async, [this, destPosn]() {
+		short nodesCountTemp = 0;
+		float distanceTemp = 0.0f;
+		std::array<CNodeAddress, MAX_NODE_POINTS> nodesTemp{};
+
+		this->calculatePath(destPosn, nodesCountTemp, nodesTemp.data(), distanceTemp);
+
+		std::lock_guard<std::mutex> lock(pathMutex);
+		targetNodesCount = nodesCountTemp;
+		targetDistance = distanceTemp;
+		std::copy(nodesTemp.begin(), nodesTemp.end(), t_ResultNodes.begin());
+	});
+}
+
+void GPS::requestMissionPath(CVector destPosn)
+{
+	if (missionFuture.valid() && missionFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+		return;
+
+	missionFuture = std::async(std::launch::async, [this, destPosn]() {
+		short nodesCountTemp = 0;
+		float distanceTemp = 0.0f;
+		std::array<CNodeAddress, MAX_NODE_POINTS> nodesTemp{};
+
+		this->calculatePath(destPosn, nodesCountTemp, nodesTemp.data(), distanceTemp);
+
+		std::lock_guard<std::mutex> lock(pathMutex);
+		missionNodesCount = nodesCountTemp;
+		missionDistance = distanceTemp;
+		std::copy(nodesTemp.begin(), nodesTemp.end(), m_ResultNodes.begin());
+	});
+}
+
 // Events
 
-constexpr void GPS::DrawRadarOverlayHandle()
+void GPS::DrawRadarOverlayHandle()
 {
 	if (!util::NavEnabled(this->cfg, player))
 		return;
 
 	if (renderTargetRoute)
-		this->renderPath(targetTracePos, -1, false, targetNodesCount, t_ResultNodes.data(), targetDistance, t_LineVerts.data());
+	{
+		std::lock_guard<std::mutex> lock(pathMutex);
+		this->renderPath(targetTracePos, -1, false, targetNodesCount, t_ResultNodes.data(), targetDistance,
+						 t_LineVerts.data());
+	}
 
 	if (renderMissionRoute)
 	{
@@ -111,7 +150,7 @@ void GPS::GameEventHandle()
 		CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_nBlipDisplay)
 	{
 		targetTracePos = CRadar::ms_RadarTrace[LOWORD(FrontEndMenuManager.m_nTargetBlipIndex)].m_vecPos;
-		this->calculatePath(targetTracePos, targetNodesCount, t_ResultNodes.data(), targetDistance);
+		this->requestTargetPath(targetTracePos);
 		renderTargetRoute = true;
 	}
 
@@ -145,7 +184,7 @@ void GPS::GameEventHandle()
 	}
 }
 
-constexpr void GPS::DrawHudEventHandle()
+void GPS::DrawHudEventHandle()
 {
 	if (!cfg.ENABLE_DISTANCE_TEXT)
 		return;
@@ -327,7 +366,7 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 	gpsDistance += this->distCache.GetDist(player->GetPosition(), ThePaths.GetPathNode(resultNodes[0])->GetNodeCoors());
 }
 
-constexpr void GPS::renderMissionTrace(tRadarTrace *trace)
+void GPS::renderMissionTrace(tRadarTrace *trace)
 {
 	// this->Log("Found mission objective blip.");
 	if (!trace)
@@ -383,8 +422,9 @@ constexpr void GPS::renderMissionTrace(tRadarTrace *trace)
 	// std::to_string(destVec.y));
 	if (renderMissionRoute)
 	{
-		this->calculatePath(destVec, missionNodesCount, m_ResultNodes.data(), missionDistance);
+		this->requestMissionPath(destVec);
 
+		std::lock_guard<std::mutex> lock(pathMutex);
 		this->renderPath(destVec, trace->m_nColour, trace->m_bFriendly, missionNodesCount, m_ResultNodes.data(),
 						 missionDistance, m_LineVerts.data());
 	}
