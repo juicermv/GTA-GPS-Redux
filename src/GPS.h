@@ -90,14 +90,14 @@ private:
 	CVector2D tmpPoint;
 	CVector2D dir;
 	CVector nodePosn;
-        CVector2D shift[2];
-        std::array<char, 1024> pathNodesToStream{};
-        std::array<int, 50000> pathNodes{};
-        std::array<CVector2D, MAX_NODE_POINTS> tmpNodePoints{};
-        std::array<CNodeAddress, MAX_NODE_POINTS> t_ResultNodes{};
-        std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> t_LineVerts{};
-        std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
-        std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> m_LineVerts{};
+	CVector2D shift[2];
+	std::array<char, 1024> pathNodesToStream{};
+	std::array<int, 50000> pathNodes{};
+	std::array<CVector2D, MAX_NODE_POINTS> tmpNodePoints{};
+	std::array<CNodeAddress, MAX_NODE_POINTS> t_ResultNodes{};
+	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> t_LineVerts{};
+	std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
+	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> m_LineVerts{};
 
 public:
 	inline GPS()
