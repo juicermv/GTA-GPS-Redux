@@ -8,17 +8,16 @@
 */
 
 #include <algorithm>
+#include <array>
+#include <chrono>
 #include <cmath>
 #include <ctime>
+#include <future>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <limits>
-#include <future>
-#include <algorithm>
-#include <array>
 #include <mutex>
-#include <chrono>
 
 #include "CFont.h"
 #include "CGeneral.h"
@@ -33,18 +32,18 @@
 #include "CTheScripts.h"
 #include "CVehicle.h"
 #include "CWorld.h"
+#include "Color.h"
 #include "RenderWare.h"
+#include "common.h"
 #include "d3d9.h"
 #include "plugin.h"
-#include "common.h"
-#include "Color.h"
 
+#include "util/Bools.h"
 #include "util/Config.h"
 #include "util/DistCache.h"
 #include "util/Logger.h"
-#include "util/Render.h"
 #include "util/Misc.h"
-#include "util/Bools.h"
+#include "util/Render.h"
 
 /*
 	#define MAX_NODE_POINTS 50000
@@ -60,18 +59,18 @@
 
 class GPS
 {
-private:
+  private:
 	void Run();
 	void GameEventHandle();
-        void DrawHudEventHandle();
-        void DrawRadarOverlayHandle();
-        void renderMissionTrace(tRadarTrace *trace);
-        // Self explanatory.
-        void calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
-        void requestTargetPath(CVector destPosn);
-        void requestMissionPath(CVector destPosn);
-        void renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,
-                                        float &gpsDistance, RwIm2DVertex *lineVerts);
+	void DrawHudEventHandle();
+	void DrawRadarOverlayHandle();
+	void renderMissionTrace(tRadarTrace *trace);
+	// Self explanatory.
+	void calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
+	void requestTargetPath(CVector destPosn);
+	void requestMissionPath(CVector destPosn);
+	void renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,
+					float &gpsDistance, RwIm2DVertex *lineVerts);
 
 	bool renderMissionRoute;
 	bool renderTargetRoute;
@@ -100,13 +99,13 @@ private:
 	std::array<CVector2D, MAX_NODE_POINTS> tmpNodePoints{};
 	std::array<CNodeAddress, MAX_NODE_POINTS> t_ResultNodes{};
 	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> t_LineVerts{};
-        std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
-        std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> m_LineVerts{};
-        std::future<void> targetFuture;
-        std::future<void> missionFuture;
-        std::mutex pathMutex;
+	std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
+	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> m_LineVerts{};
+	std::future<void> targetFuture;
+	std::future<void> missionFuture;
+	std::mutex pathMutex;
 
-public:
+  public:
 	inline GPS()
 	{
 		this->Run();

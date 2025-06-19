@@ -1,12 +1,13 @@
 #pragma once
-#include "mini/ini.h"
 #include "CRGBA.h"
+#include "mini/ini.h"
 
 namespace util
 {
 	struct Config
 	{
-		bool ENABLE_BMX, ENABLE_MOVING, ENABLE_WATER_GPS, RESPECT_LANE_DIRECTION, ENABLE_DISTANCE_TEXT, DISTANCE_UNITS = 0;
+		bool ENABLE_BMX, ENABLE_MOVING, ENABLE_WATER_GPS, RESPECT_LANE_DIRECTION, ENABLE_DISTANCE_TEXT,
+			DISTANCE_UNITS = 0;
 		bool LOGFILE_ENABLED = 0;
 		bool ENABLE_CUSTOM_CLRS = 0;
 		float GPS_LINE_WIDTH, DISABLE_PROXIMITY = 0.0f;
@@ -16,4 +17,4 @@ namespace util
 
 		Config(const char *filename);
 	};
-}
+} // namespace util
