@@ -5,28 +5,28 @@ namespace util
 	void ExtractColorFromString(std::string in, CRGBA &out)
 	{
 		// Remove whitespace
-		in.erase(std::remove_if(in.begin(), in.end(), isspace), in.end());
+		in.erase(std::ranges::remove_if(in, isspace).begin(), in.end());
 
 		bool didR = false, didG = false, didB = false, didA = false;
 
 		size_t pos = 0;
 		for (unsigned char i = 0; i < 4; i++)
 		{
-			pos = in.find(",");
+			pos = in.find(',');
 
 			if (!didR)
 			{
-				out.r = (unsigned char)std::stoi(in.substr(0, pos).c_str());
+				out.r = static_cast<unsigned char>(std::stoi(in.substr(0, pos)));
 				didR = true;
 			}
 			else if (!didG)
 			{
-				out.g = (unsigned char)std::stoi(in.substr(0, pos).c_str());
+				out.g = static_cast<unsigned char>(std::stoi(in.substr(0, pos)));
 				didG = true;
 			}
 			else if (!didB)
 			{
-				out.b = (unsigned char)std::stoi(in.substr(0, pos).c_str());
+				out.b = static_cast<unsigned char>(std::stoi(in.substr(0, pos)));
 				didB = true;
 			}
 			else if (!didA)

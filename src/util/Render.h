@@ -3,7 +3,7 @@
 
 namespace util
 {
-	CRGBA SetupColor(short color, bool friendly, struct Config cfg)
+	inline CRGBA SetupColor(short color, bool friendly, const struct Config& cfg)
 	{
 		CRGBA clr;
 		if (cfg.ENABLE_CUSTOM_CLRS)
@@ -59,7 +59,7 @@ namespace util
 		return clr;
 	}
 
-	constexpr void Setup2dVertex(RwIm2DVertex &vertex, double x, double y, CRGBA &clr)
+	constexpr void Setup2dVertex(RwIm2DVertex &vertex, const double x, const double y, const CRGBA &clr)
 	{
 		vertex.x = x;
 		vertex.y = y;

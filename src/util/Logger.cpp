@@ -25,7 +25,7 @@ namespace util
 		}
 	}
 
-	Logger::Logger(bool enabled)
+	Logger::Logger(const bool enabled)
 	{
 		this->enabled = enabled;
 		if (enabled)

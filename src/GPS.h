@@ -65,7 +65,7 @@ class GPS
 	void DrawRadarOverlayHandle();
 	void renderMissionTrace(tRadarTrace *trace);
 	// Self explanatory.
-	void calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
+	void calculatePath(const CVector &destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance);
 	void requestTargetPath(CVector destPosn);
 	void requestMissionPath(CVector destPosn);
 	void renderPath(CVector tracePos, short color, bool friendly, short &nodesCount, CNodeAddress *resultNodes,

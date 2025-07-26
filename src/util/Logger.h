@@ -14,6 +14,6 @@ namespace util
 
 	  public:
 		void Log(const char *val);
-		Logger(bool enabled);
+		explicit Logger(bool enabled);
 	};
 } // namespace util

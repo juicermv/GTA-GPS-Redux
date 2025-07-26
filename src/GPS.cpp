@@ -4,8 +4,8 @@ void GPS::Run()
 {
 	logger = util::Logger(cfg.LOGFILE_ENABLED);
 
-	std::fill(std::begin(pathNodesToStream), std::end(pathNodesToStream), 1);
-	std::fill(std::begin(pathNodes), std::end(pathNodes), -1);
+	std::ranges::fill(pathNodesToStream, 1);
+	std::ranges::fill(pathNodes, -1);
 
 	plugin::patch::SetPointer(0x44DE3C, pathNodesToStream.data());
 	plugin::patch::SetPointer(0x450D03, pathNodesToStream.data());
@@ -23,7 +23,7 @@ void GPS::Run()
 	plugin::Events::drawRadarEvent += [this]() { this->DrawHudEventHandle(); };
 }
 
-void GPS::calculatePath(CVector destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance)
+void GPS::calculatePath(const CVector& destPosn, short &nodesCount, CNodeAddress *resultNodes, float &gpsDistance)
 {
 	ThePaths.DoPathSearch(
 		0, player->GetPosition(), CNodeAddress(), destPosn, resultNodes, &nodesCount, MAX_NODE_POINTS, &gpsDistance,

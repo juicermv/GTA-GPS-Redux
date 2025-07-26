@@ -9,14 +9,14 @@ namespace util
 		return m * 1.094f;
 	}
 
-	SIMDString<64> Float2String(float in, unsigned char precision = 2)
+	inline SIMDString<64> Float2String(const float in, unsigned char precision = 2)
 	{
 		std::ostringstream stream;
 		stream << std::fixed << std::setprecision(precision) << in;
 		return SIMDString<64>(stream.str());
 	}
 
-	SIMDString<64> makeDist(float dist, bool units)
+	SIMDString<64> makeDist(float dist, const bool units)
 	{
 		// 1 Unit of distance = 1 meter.
 		switch (units)
