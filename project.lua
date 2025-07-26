@@ -91,7 +91,7 @@ tasks:create("build_mingw", function()
         "external/d3dx9",
         SIMDStringX86_MINGW
     }
-    project.arch = i686
+    project.arch = "i686"
     project.libs = {
         "d3d9",
         "d3dx9",
