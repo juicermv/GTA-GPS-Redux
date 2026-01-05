@@ -52,6 +52,7 @@ namespace util
 		ENABLE_BMX = static_cast<bool>(std::atoi(ini["Navigation"]["enableOnBicycles"].c_str()));
 		ENABLE_WATER_GPS = static_cast<bool>(std::atoi(ini["Navigation"]["enableOnBoats"].c_str()));
 		ENABLE_MOVING = static_cast<bool>(std::atoi(ini["Navigation"]["trackMovingTargets"].c_str()));
+		ENABLE_PICKUPS = static_cast<bool>(std::atoi(ini["Navigation"]["enablePickups"].c_str()));
 		DISABLE_PROXIMITY = static_cast<float>(std::atof(ini["Navigation"]["removeRadius"].c_str()));
 
 		/* Extras */

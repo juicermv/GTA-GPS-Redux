@@ -415,10 +415,33 @@ void GPS::renderMissionTrace(tRadarTrace *trace)
 	case 8: // Airstripts
 	case 0: // NONE???
 		return;
-	case 7: // Pickups
-		renderMissionRoute = false;
-		logger.Log("Pickup detected. Not providing GPS navigation!");
-		return;
+	case 7: // Pickups - Fix for Issue #1
+	{
+		if (!cfg.ENABLE_PICKUPS)
+		{
+			renderMissionRoute = false;
+			return;
+		}
+
+		// Get pickup from pool using the blip's entity handle
+		int pickupIndex = CPickups::GetActualPickupIndex(trace->m_nEntityHandle);
+		if (pickupIndex < 0 || pickupIndex >= 620)
+		{
+			renderMissionRoute = false;
+			return;
+		}
+
+		CPickup* pickup = &CPickups::aPickUps[pickupIndex];
+		if (!pickup || pickup->m_nPickupType == 0)
+		{
+			renderMissionRoute = false;
+			return;
+		}
+
+		// GetPosn() decompresses coordinates (stored as int16 * 8.0f)
+		destVec = pickup->GetPosn();
+		break;
+	}
 	default:
 		destVec = trace->m_vecPos;
 		break;
