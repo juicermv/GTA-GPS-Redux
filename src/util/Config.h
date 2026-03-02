@@ -10,6 +10,7 @@ namespace util
 			DISTANCE_UNITS = 0;
 		bool LOGFILE_ENABLED = 0;
 		bool ENABLE_CUSTOM_CLRS = 0;
+		short ENABLE_SAMP = 2; // 0 = off, 1 = on, 2 = auto-detect
 		float GPS_LINE_WIDTH, DISABLE_PROXIMITY = 0.0f;
 
 		CRGBA CC_RED, CC_GREEN, CC_BLUE, CC_WHITE, CC_PURPLE, CC_YELLOW, CC_CYAN;

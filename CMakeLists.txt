@@ -133,7 +133,7 @@ if(MSVC)
 
     # MSVC Libraries
     target_link_libraries(gps_redux PRIVATE
-            plugin.lib d3d9.lib d3dx9.lib simdstring.lib
+            plugin.lib d3d9.lib d3dx9.lib simdstring.lib psapi.lib kernel32.lib
     )
 
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang") # MinGW/GCC/Clang
@@ -155,7 +155,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang") # MinGW/GCC/Clang
 
     # MinGW Libraries (CMake handles lib prefix and .a suffix)
     target_link_libraries(gps_redux PRIVATE
-            plugin d3d9 d3dx9 SIMDString
+            plugin d3d9 d3dx9 SIMDString psapi kernel32
     )
 
 else()

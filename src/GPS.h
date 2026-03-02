@@ -59,6 +59,9 @@
 class GPS
 {
   private:
+	HANDLE hThread = NULL;
+	static DWORD WINAPI sampInit(LPVOID lpParam);
+
 	void Run();
 	void GameEventHandle();
 	void DrawHudEventHandle();
@@ -106,6 +109,27 @@ class GPS
   public:
 	inline GPS()
 	{
-		this->Run();
+		bool useSamp = false;
+		if (cfg.ENABLE_SAMP == 2)
+			useSamp = GetModuleHandle("samp.dll") != NULL;
+		else
+			useSamp = cfg.ENABLE_SAMP == 1;
+
+		if (useSamp)
+		{
+			this->hThread = CreateThread(NULL, 0, GPS::sampInit, (LPVOID)this, 0, NULL);
+			if (this->hThread == NULL)
+				this->Run();
+		}
+		else
+		{
+			this->Run();
+		}
+	}
+
+	inline ~GPS()
+	{
+		if (this->hThread != NULL)
+			TerminateThread(this->hThread, 0);
 	}
 } GPSLineRedux;
