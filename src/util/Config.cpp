@@ -1,42 +1,51 @@
 #include "Config.h"
+#include <algorithm>
+#include <cctype>
+#include <charconv>
 
 namespace util
 {
-	void ExtractColorFromString(std::string in, CRGBA &out)
+	// Parses "R, G, B, A" into out. Returns false (leaving out untouched) on
+	// anything malformed instead of throwing - this runs on user-editable
+	// ini text, so a typo or a missing value must not be able to crash the
+	// plugin during Config's construction at DLL load.
+	bool TryParseColor(std::string in, CRGBA &out)
 	{
-		// Remove whitespace
 		in.erase(std::ranges::remove_if(in, isspace).begin(), in.end());
 
-		bool didR = false, didG = false, didB = false, didA = false;
-
-		size_t pos = 0;
+		unsigned char *channels[4] = {&out.r, &out.g, &out.b, &out.a};
 		for (unsigned char i = 0; i < 4; i++)
 		{
-			pos = in.find(',');
+			size_t pos = in.find(',');
+			std::string token = in.substr(0, pos);
 
-			if (!didR)
-			{
-				out.r = static_cast<unsigned char>(std::stoi(in.substr(0, pos)));
-				didR = true;
-			}
-			else if (!didG)
-			{
-				out.g = static_cast<unsigned char>(std::stoi(in.substr(0, pos)));
-				didG = true;
-			}
-			else if (!didB)
-			{
-				out.b = static_cast<unsigned char>(std::stoi(in.substr(0, pos)));
-				didB = true;
-			}
-			else if (!didA)
-			{
-				out.a = (unsigned char)std::stoi(in.substr(0, pos).c_str());
-				didA = true;
-			}
+			int value = -1;
+			auto result = std::from_chars(token.data(), token.data() + token.size(), value);
+			if (result.ec != std::errc() || value < 0 || value > 255)
+				return false;
+
+			*channels[i] = static_cast<unsigned char>(value);
+
+			if (pos == std::string::npos)
+				return i == 3;
 
 			in.erase(0, pos + 1);
 		}
+		return true;
+	}
+
+	// Only touches CUSTOM_COLORS when the key is actually present -
+	// ini[section][key] auto-creates an empty string for a missing key,
+	// which used to make color parsing throw on any incomplete ini.
+	static void LoadNamedColor(mINI::INIStructure &ini, const std::string &key, unsigned int blipColor,
+							   std::unordered_map<unsigned int, CRGBA> &out)
+	{
+		if (!ini["Custom Colors"].has(key))
+			return;
+
+		CRGBA color;
+		if (TryParseColor(ini["Custom Colors"].get(key), color))
+			out[blipColor] = color;
 	}
 
 	Config::Config(const char *filename)
@@ -62,14 +71,38 @@ namespace util
 		ENABLE_CUSTOM_CLRS = static_cast<bool>(std::atoi(ini["Custom Colors"]["enabled"].c_str()));
 		if (ENABLE_CUSTOM_CLRS)
 		{
-			ExtractColorFromString(ini["Custom Colors"]["waypoint"], GPS_LINE_CLR);
-			ExtractColorFromString(ini["Custom Colors"]["red"], CC_RED);
-			ExtractColorFromString(ini["Custom Colors"]["green"], CC_GREEN);
-			ExtractColorFromString(ini["Custom Colors"]["blue"], CC_BLUE);
-			ExtractColorFromString(ini["Custom Colors"]["white"], CC_WHITE);
-			ExtractColorFromString(ini["Custom Colors"]["yellow"], CC_YELLOW);
-			ExtractColorFromString(ini["Custom Colors"]["purple"], CC_PURPLE);
-			ExtractColorFromString(ini["Custom Colors"]["cyan"], CC_CYAN);
+			if (ini["Custom Colors"].has("waypoint"))
+				TryParseColor(ini["Custom Colors"].get("waypoint"), GPS_LINE_CLR);
+
+			LoadNamedColor(ini, "red", 0, CUSTOM_COLORS);
+			LoadNamedColor(ini, "green", 1, CUSTOM_COLORS);
+			LoadNamedColor(ini, "blue", 2, CUSTOM_COLORS);
+			LoadNamedColor(ini, "white", 3, CUSTOM_COLORS);
+			LoadNamedColor(ini, "yellow", 4, CUSTOM_COLORS);
+			LoadNamedColor(ini, "purple", 5, CUSTOM_COLORS);
+			LoadNamedColor(ini, "cyan", 6, CUSTOM_COLORS);
+
+			// Any "colorN=" key registers/overrides an arbitrary blip color
+			// index, so a mod can add colors beyond vanilla's 0-8 range
+			// without needing a named slot here.
+			for (auto const &entry : ini["Custom Colors"])
+			{
+				const std::string &key = entry.first;
+				if (key.rfind("color", 0) != 0)
+					continue;
+
+				std::string indexPart = key.substr(5);
+				if (indexPart.empty() ||
+					!std::ranges::all_of(indexPart, [](unsigned char c) { return std::isdigit(c) != 0; }))
+					continue;
+
+				unsigned int index = 0;
+				std::from_chars(indexPart.data(), indexPart.data() + indexPart.size(), index);
+
+				CRGBA color;
+				if (TryParseColor(entry.second, color))
+					CUSTOM_COLORS[index] = color;
+			}
 		}
 
 		/* Log */
