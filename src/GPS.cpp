@@ -290,9 +290,17 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 			tmpNodeVisible[i] = std::fabs(tmpPoint.x) <= 1.0f && std::fabs(tmpPoint.y) <= 1.0f;
 			CRadar::LimitRadarPoint(tmpPoint);
 			CRadar::TransformRadarPointToScreenSpace(tmpNodePoints[i], tmpPoint);
-			// LimitToMap()'s bounds are in CRadar's native coordinate space,
-			// not screen pixels, so it must run before the rescale below.
-			CRadar::LimitToMap(&tmpNodePoints[i].x, &tmpNodePoints[i].y);
+			// Clamp to the map image extent (base +/- zoom) in the native
+			// 640x448 space the points are in now. CRadar::LimitToMap() can't
+			// be used: its bounds are already multiplied by the game's screen
+			// stretch (which WidescreenFix changes), so against these native
+			// values it clamps far too early and flattens the route's tail
+			// against the map's top/left edge.
+			const float mapZoom = FrontEndMenuManager.m_fMapZoom;
+			tmpNodePoints[i].x = std::clamp(tmpNodePoints[i].x, FrontEndMenuManager.m_fMapBaseX - mapZoom,
+											FrontEndMenuManager.m_fMapBaseX + mapZoom);
+			tmpNodePoints[i].y = std::clamp(tmpNodePoints[i].y, FrontEndMenuManager.m_fMapBaseY - mapZoom,
+											FrontEndMenuManager.m_fMapBaseY + mapZoom);
 			tmpNodePoints[i].x = tmpNodePoints[i].x * xScale + mapOffsetX;
 			tmpNodePoints[i].y *= yScale;
 		}
