@@ -95,6 +95,7 @@ class GPS
 	std::array<char, 1024> pathNodesToStream{};
 	std::array<int, 50000> pathNodes{};
 	std::array<CVector2D, MAX_NODE_POINTS> tmpNodePoints{};
+	std::array<bool, MAX_NODE_POINTS> tmpNodeVisible{};
 	std::array<CNodeAddress, MAX_NODE_POINTS> t_ResultNodes{};
 	std::array<RwIm2DVertex, MAX_NODE_POINTS * 4> t_LineVerts{};
 	std::array<CNodeAddress, MAX_NODE_POINTS> m_ResultNodes{};
