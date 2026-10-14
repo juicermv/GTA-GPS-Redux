@@ -255,17 +255,45 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 		return;
 	}
 
-	// WidescreenFix draws the pause map pillarboxed to a 4:3 rect locked to
-	// screen height, not stretched across the whole screen; this falls back
-	// to the full screen automatically when it already is 4:3.
+	// Older WidescreenFix versions draw the pause map pillarboxed to a 4:3
+	// rect locked to screen height, not stretched across the whole screen;
+	// this falls back to the full screen automatically when it already is
+	// 4:3. Newer ones draw it on a virtual canvas as wide as the screen with
+	// the map origin centered on it, so there is no pillarbox offset left.
+	// The newer MenuMap replaces the game's map origin clamp at 0x578785 with
+	// a jump; vanilla (and older WidescreenFix) leave the original 0xD9 there.
+	// The pillarbox branch can go once a stable WidescreenFix ships the canvas map.
+	const bool canvasMapLayout = *reinterpret_cast<unsigned char *>(0x578785) != 0xD9;
 	float screenWidth = static_cast<float>(RsGlobal.maximumWidth);
 	float mapHeight = static_cast<float>(RsGlobal.maximumHeight);
 	float mapWidth = mapHeight * (4.0f / 3.0f);
 	if (mapWidth > screenWidth)
 		mapWidth = screenWidth;
-	float mapOffsetX = (screenWidth - mapWidth) / 2.0f;
+	float mapOffsetX = canvasMapLayout ? 0.0f : (screenWidth - mapWidth) / 2.0f;
 	float xScale = mapWidth / 640.0f;
 	float yScale = mapHeight / 448.0f;
+
+	// The not-yet-loaded overview is a square texture, but the canvas layout
+	// scales x by 480 and y by 448 units. WidescreenFix compensates by
+	// stretching x about the map origin inside the game's own transform, but
+	// only while it is drawing the overview. Measure the transform's actual
+	// x/y ratio so the stretch is applied here only if it is still missing.
+	// (m_bStandardInput sits where the game's m_bMapLoaded does.)
+	float overviewStretch = 1.0f;
+	if (canvasMapLayout && FrontEndMenuManager.m_bDrawRadarOrMap && !FrontEndMenuManager.m_bStandardInput)
+	{
+		CVector2D left, right, up, down;
+		CRadar::TransformRadarPointToScreenSpace(left, CVector2D(-1.0f, 0.0f));
+		CRadar::TransformRadarPointToScreenSpace(right, CVector2D(1.0f, 0.0f));
+		CRadar::TransformRadarPointToScreenSpace(up, CVector2D(0.0f, 1.0f));
+		CRadar::TransformRadarPointToScreenSpace(down, CVector2D(0.0f, -1.0f));
+		float extentY = down.y - up.y;
+		if (extentY > 0.0f)
+		{
+			if ((right.x - left.x) / extentY < 1.03f)
+				overviewStretch = 480.0f / 448.0f;
+		}
+	}
 
 	for (unsigned short i = 0; i < nodesCount; i++)
 	{
@@ -283,24 +311,23 @@ void GPS::renderPath(CVector tracePos, short color, bool friendly, short &nodesC
 			// A node outside the current zoom/pan gets clamped back into
 			// range by LimitRadarPoint() below instead of staying off-map;
 			// track that here so segments to/from it can be skipped later.
-			// The map viewport is a square (matching LimitToMap()'s per-axis
-			// bound below), not a circle, so this has to check each axis
+			// The map viewport is a square (matching the per-axis
+			// clamp below), not a circle, so this has to check each axis
 			// separately - a destination at the map's true corner has
 			// magnitude > 1 but is still fully in view.
 			tmpNodeVisible[i] = std::fabs(tmpPoint.x) <= 1.0f && std::fabs(tmpPoint.y) <= 1.0f;
 			CRadar::LimitRadarPoint(tmpPoint);
+			// Clamp to the map image extent in radar space, where it is simply
+			// +/-1 on each axis. CRadar::LimitToMap() can't be used: its bounds
+			// are already multiplied by the game's screen stretch (which
+			// WidescreenFix changes), so against these native-space points it
+			// clamps far too early and flattens the route against the edge.
+			tmpPoint.x = std::clamp(tmpPoint.x, -1.0f, 1.0f);
+			tmpPoint.y = std::clamp(tmpPoint.y, -1.0f, 1.0f);
 			CRadar::TransformRadarPointToScreenSpace(tmpNodePoints[i], tmpPoint);
-			// Clamp to the map image extent (base +/- zoom) in the native
-			// 640x448 space the points are in now. CRadar::LimitToMap() can't
-			// be used: its bounds are already multiplied by the game's screen
-			// stretch (which WidescreenFix changes), so against these native
-			// values it clamps far too early and flattens the route's tail
-			// against the map's top/left edge.
-			const float mapZoom = FrontEndMenuManager.m_fMapZoom;
-			tmpNodePoints[i].x = std::clamp(tmpNodePoints[i].x, FrontEndMenuManager.m_fMapBaseX - mapZoom,
-											FrontEndMenuManager.m_fMapBaseX + mapZoom);
-			tmpNodePoints[i].y = std::clamp(tmpNodePoints[i].y, FrontEndMenuManager.m_fMapBaseY - mapZoom,
-											FrontEndMenuManager.m_fMapBaseY + mapZoom);
+			if (overviewStretch != 1.0f)
+				tmpNodePoints[i].x = FrontEndMenuManager.m_fMapBaseX +
+									 (tmpNodePoints[i].x - FrontEndMenuManager.m_fMapBaseX) * overviewStretch;
 			tmpNodePoints[i].x = tmpNodePoints[i].x * xScale + mapOffsetX;
 			tmpNodePoints[i].y *= yScale;
 		}
